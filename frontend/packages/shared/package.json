@@ -1,0 +1,30 @@
+{
+  "name": "@raqs/shared",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./server": "./src/server.ts",
+    "./tokens.css": "./src/tokens/tokens.css",
+    "./tailwind-preset": "./tailwind-preset.cjs"
+  },
+  "scripts": {
+    "generate:api": "openapi-typescript ../../openapi.json -o src/api/types.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "^5.0.0",
+    "react": "19.2.3"
+  },
+  "devDependencies": {
+    "@tanstack/react-query": "^5.90.2",
+    "@types/react": "^19.1.13",
+    "openapi-typescript": "^7.9.1",
+    "react": "^19.1.1",
+    "typescript": "^5.9.2"
+  }
+}

@@ -1,0 +1,42 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Testing and Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Frontend
+node_modules/
+.next/
+.expo/
+dist/
+*.tsbuildinfo
+frontend/storefront/.env.local
+frontend/storefront/.env*.local
+frontend/mobile/.env
+frontend/mobile/.env.local
+
+# specs
+specs/

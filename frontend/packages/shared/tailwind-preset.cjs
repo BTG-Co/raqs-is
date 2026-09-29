@@ -1,0 +1,56 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          DEFAULT: "var(--color-primary)",
+          50: "var(--color-primary-50)",
+          100: "var(--color-primary-100)",
+          200: "var(--color-primary-200)",
+          300: "var(--color-primary-300)",
+          400: "var(--color-primary-400)",
+          500: "var(--color-primary-500)",
+          600: "var(--color-primary-600)",
+          700: "var(--color-primary-700)",
+          800: "var(--color-primary-800)",
+          900: "var(--color-primary-900)",
+        },
+        secondary: {
+          DEFAULT: "var(--color-secondary)",
+          50: "var(--color-secondary-50)",
+          100: "var(--color-secondary-100)",
+          200: "var(--color-secondary-200)",
+          300: "var(--color-secondary-300)",
+          400: "var(--color-secondary-400)",
+          500: "var(--color-secondary-500)",
+          600: "var(--color-secondary-600)",
+          700: "var(--color-secondary-700)",
+          800: "var(--color-secondary-800)",
+          900: "var(--color-secondary-900)",
+        },
+        warning: "var(--color-warning)",
+        error: "var(--color-error)",
+        success: "var(--color-success)",
+        support: "var(--color-support)",
+        canvas: "var(--color-background)",
+        card: "var(--color-card)",
+        sidebar: "var(--color-sidebar)",
+        line: "var(--color-border)",
+        ink: "var(--color-text)",
+        muted: "var(--color-text-muted)",
+        navbar: "var(--color-navbar)",
+        "on-warning": "var(--color-on-warning)",
+        "on-secondary": "var(--color-on-secondary)",
+        "on-primary": "var(--color-on-primary)",
+      },
+      borderRadius: {
+        card: "12px",
+        pill: "999px",
+      },
+      boxShadow: {
+        card: "var(--shadow-card)",
+      },
+    },
+  },
+};

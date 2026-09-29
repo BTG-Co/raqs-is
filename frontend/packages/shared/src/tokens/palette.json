@@ -1,0 +1,67 @@
+{
+  "primaryScale": {
+    "50": "#F4F3FB",
+    "100": "#E6E4F6",
+    "200": "#D0CBEE",
+    "300": "#AFA6E0",
+    "400": "#887CC9",
+    "500": "#6556B0",
+    "600": "#4E449C",
+    "700": "#423A8E",
+    "800": "#322C6C",
+    "900": "#241F4E"
+  },
+  "secondaryScale": {
+    "50": "#E7FBFB",
+    "100": "#C5F6F6",
+    "200": "#8EEEEE",
+    "300": "#4FE3E4",
+    "400": "#1AD4D5",
+    "500": "#00CCCD",
+    "600": "#00A3A4",
+    "700": "#007E7F",
+    "800": "#005C5D",
+    "900": "#003D3E"
+  },
+  "colors": {
+    "primary": { "light": "#423A8E", "dark": "#A79AD6" },
+    "secondary": { "light": "#00CCCD", "dark": "#4FE3E4" },
+    "warning": { "light": "#FFC107", "dark": "#FFD454" },
+    "error": { "light": "#DC3545", "dark": "#F0717E" },
+    "success": { "light": "#198754", "dark": "#3DDC97" },
+    "support": { "light": "#0D6EFD", "dark": "#6EA8FE" },
+    "textOnWarning": { "light": "#1F2430", "dark": "#1F2430" },
+    "textOnSecondary": { "light": "#1F2430", "dark": "#1F2430" },
+    "textOnPrimary": { "light": "#FFFFFF", "dark": "#1F2430" },
+    "background": { "light": "#F4F5FB", "dark": "#12141C" },
+    "card": { "light": "#FFFFFF", "dark": "#1C1F2A" },
+    "sidebar": { "light": "#ECEEFA", "dark": "#1A1D2B" },
+    "border": { "light": "#E2E5F0", "dark": "#2C3142" },
+    "text": { "light": "#1F2430", "dark": "#F4F5FB" },
+    "textMuted": { "light": "#5C6478", "dark": "#A8B0C2" },
+    "navbar": { "light": "#1B1E27", "dark": "#0E1016" },
+    "white": { "light": "#FFFFFF", "dark": "#FFFFFF" }
+  },
+  "spacing": {
+    "1": 4,
+    "2": 8,
+    "3": 12,
+    "4": 16,
+    "6": 24,
+    "8": 32
+  },
+  "radii": {
+    "card": 12,
+    "pill": 999,
+    "control": 8
+  },
+  "fontSizes": {
+    "xs": 12,
+    "sm": 14,
+    "md": 16,
+    "lg": 20,
+    "xl": 28,
+    "stat": 32
+  },
+  "touchTarget": 44
+}
