@@ -4,18 +4,19 @@ from fastapi import APIRouter, Depends, status
 
 from app.schemas.product import ProductCreate, ProductResponse, ProductUpdate
 from app.services.product import ProductService
-from app.core.dependencies import get_product_service
+from app.core.dependencies import get_current_user, get_product_service, require_admin
 
 
 router = APIRouter(
     prefix="/products",
-    tags=["products"]
+    tags=["products"],
 )
 
 @router.post(
     "",
     status_code=status.HTTP_201_CREATED,
-    response_model=ProductResponse
+    response_model=ProductResponse,
+    dependencies=[Depends(require_admin)],
 )
 def create(
     payload: ProductCreate,
@@ -26,7 +27,8 @@ def create(
 @router.get(
     "",
     status_code=status.HTTP_200_OK,
-    response_model=list[ProductResponse]
+    response_model=list[ProductResponse],
+    dependencies=[Depends(get_current_user)],
 )
 def get_all_products(
     service: Annotated[ProductService, Depends(get_product_service)]
@@ -36,7 +38,8 @@ def get_all_products(
 @router.get(
     "/{product_id}",
     status_code=status.HTTP_200_OK,
-    response_model=ProductResponse
+    response_model=ProductResponse,
+    dependencies=[Depends(get_current_user)],
 )
 def get_product_by_id(
     product_id: UUID,
@@ -47,7 +50,8 @@ def get_product_by_id(
 @router.patch(
     "/{product_id}",
     status_code=status.HTTP_200_OK,
-    response_model=ProductResponse
+    response_model=ProductResponse,
+    dependencies=[Depends(require_admin)],
 )
 def update(
     product_id: UUID,
@@ -59,7 +63,8 @@ def update(
 @router.delete(
     "/{product_id}",
     status_code=status.HTTP_200_OK,
-    response_model=None
+    response_model=None,
+    dependencies=[Depends(require_admin)],
 )
 def delete(
     product_id: UUID,

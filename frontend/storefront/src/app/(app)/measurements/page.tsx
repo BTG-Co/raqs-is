@@ -41,7 +41,6 @@ export default function MeasurementsPage() {
         error={measurements.error ? errorMessage(measurements.error) : null}
         onRetry={() => void measurements.refetch()}
         rowKey={(row) => row.id}
-        searchText={(row) => `${row.name} ${row.short_name}`}
         emptyLabel="No measurements yet."
         addLabel="Add measurement"
         onAdd={() => { setEditing(null); setOpen(true); }}

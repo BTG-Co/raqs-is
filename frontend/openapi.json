@@ -37,6 +37,71 @@
         }
       }
     },
+    "/auth/user/token": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Login For Access Token",
+        "operationId": "login_for_access_token_auth_user_token_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginForm"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Me",
+        "operationId": "me_auth_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
     "/products": {
       "get": {
         "tags": [
@@ -59,7 +124,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -98,7 +168,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
       }
     },
     "/products/{product_id}": {
@@ -108,6 +183,11 @@
         ],
         "summary": "Get Product By Id",
         "operationId": "get_product_by_id_products__product_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "product_id",
@@ -149,6 +229,11 @@
         ],
         "summary": "Update",
         "operationId": "update_products__product_id__patch",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "product_id",
@@ -200,6 +285,11 @@
         ],
         "summary": "Delete",
         "operationId": "delete_products__product_id__delete",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "product_id",
@@ -256,7 +346,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -295,7 +390,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
       }
     },
     "/inventory/{inventory_id}": {
@@ -305,6 +405,11 @@
         ],
         "summary": "Get By Id",
         "operationId": "get_by_id_inventory__inventory_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "inventory_id",
@@ -317,57 +422,6 @@
             }
           }
         ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InventoryResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
-      "patch": {
-        "tags": [
-          "inventory"
-        ],
-        "summary": "Update",
-        "operationId": "update_inventory__inventory_id__patch",
-        "parameters": [
-          {
-            "name": "inventory_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Inventory Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/InventoryUpdate"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -397,6 +451,11 @@
         ],
         "summary": "Delete",
         "operationId": "delete_inventory__inventory_id__delete",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "inventory_id",
@@ -415,156 +474,6 @@
             "content": {
               "application/json": {
                 "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/inventory_update_requests": {
-      "get": {
-        "tags": [
-          "inventory_update_requests"
-        ],
-        "summary": "Get List",
-        "operationId": "get_list_inventory_update_requests_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/InventoryUpdateRequestResponse"
-                  },
-                  "type": "array",
-                  "title": "Response Get List Inventory Update Requests Get"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "inventory_update_requests"
-        ],
-        "summary": "Create",
-        "operationId": "create_inventory_update_requests_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/InventoryUpdateRequestCreate"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InventoryUpdateRequestResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/inventory_update_requests/{request_id}/approve": {
-      "post": {
-        "tags": [
-          "inventory_update_requests"
-        ],
-        "summary": "Approve",
-        "operationId": "approve_inventory_update_requests__request_id__approve_post",
-        "parameters": [
-          {
-            "name": "request_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Request Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InventoryUpdateRequestResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/inventory_update_requests/{request_id}/reject": {
-      "post": {
-        "tags": [
-          "inventory_update_requests"
-        ],
-        "summary": "Reject",
-        "operationId": "reject_inventory_update_requests__request_id__reject_post",
-        "parameters": [
-          {
-            "name": "request_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Request Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InventoryUpdateRequestResponse"
-                }
               }
             }
           },
@@ -603,7 +512,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -642,7 +556,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
       }
     },
     "/measurement_conversions/{measurement_conversion_id}": {
@@ -652,6 +571,11 @@
         ],
         "summary": "Get By Id",
         "operationId": "get_by_id_measurement_conversions__measurement_conversion_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "measurement_conversion_id",
@@ -693,6 +617,11 @@
         ],
         "summary": "Update",
         "operationId": "update_measurement_conversions__measurement_conversion_id__patch",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "measurement_conversion_id",
@@ -744,6 +673,11 @@
         ],
         "summary": "Delete",
         "operationId": "delete_measurement_conversions__measurement_conversion_id__delete",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "measurement_conversion_id",
@@ -800,7 +734,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -839,7 +778,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
       }
     },
     "/measurements/{measurement_id}": {
@@ -849,6 +793,11 @@
         ],
         "summary": "Get By Id",
         "operationId": "get_by_id_measurements__measurement_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "measurement_id",
@@ -890,6 +839,11 @@
         ],
         "summary": "Update",
         "operationId": "update_measurements__measurement_id__patch",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "measurement_id",
@@ -941,6 +895,11 @@
         ],
         "summary": "Delete",
         "operationId": "delete_measurements__measurement_id__delete",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "measurement_id",
@@ -997,7 +956,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
       },
       "post": {
         "tags": [
@@ -1036,7 +1000,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
       }
     },
     "/users/{user_id}": {
@@ -1046,6 +1015,11 @@
         ],
         "summary": "Get By Id",
         "operationId": "get_by_id_users__user_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "user_id",
@@ -1087,6 +1061,11 @@
         ],
         "summary": "Update",
         "operationId": "update_users__user_id__patch",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "user_id",
@@ -1138,6 +1117,11 @@
         ],
         "summary": "Delete",
         "operationId": "delete_users__user_id__delete",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "user_id",
@@ -1171,19 +1155,226 @@
           }
         }
       }
+    },
+    "/transactions": {
+      "get": {
+        "tags": [
+          "transactions"
+        ],
+        "summary": "Get List",
+        "operationId": "get_list_transactions_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TransactionResponse"
+                  },
+                  "type": "array",
+                  "title": "Response Get List Transactions Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "transactions"
+        ],
+        "summary": "Create",
+        "operationId": "create_transactions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransactionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/transactions/approve": {
+      "post": {
+        "tags": [
+          "transactions"
+        ],
+        "summary": "Approve",
+        "operationId": "approve_transactions_approve_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransactionApprove"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TransactionResponse"
+                  },
+                  "type": "array",
+                  "title": "Response Approve Transactions Approve Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/transactions/{transaction_id}": {
+      "get": {
+        "tags": [
+          "transactions"
+        ],
+        "summary": "Get By Id",
+        "operationId": "get_by_id_transactions__transaction_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Transaction Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "transactions"
+        ],
+        "summary": "Delete",
+        "operationId": "delete_transactions__transaction_id__delete",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Transaction Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
-      "ApprovalStatus": {
-        "type": "string",
-        "enum": [
-          "PENDING",
-          "APPROVED",
-          "REJECTED"
-        ],
-        "title": "ApprovalStatus"
-      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1209,16 +1400,16 @@
             "format": "uuid",
             "title": "Measurement Id"
           },
-          "amount": {
+          "current_stock": {
             "type": "number",
-            "title": "Amount"
+            "title": "Current Stock"
           }
         },
         "type": "object",
         "required": [
           "product_id",
           "measurement_id",
-          "amount"
+          "current_stock"
         ],
         "title": "InventoryCreate"
       },
@@ -1239,9 +1430,12 @@
             "format": "uuid",
             "title": "Measurement Id"
           },
-          "amount": {
+          "current_stock": {
             "type": "number",
-            "title": "Amount"
+            "title": "Current Stock"
+          },
+          "creator": {
+            "$ref": "#/components/schemas/UserCreatedByResponse"
           },
           "created_at": {
             "type": "string",
@@ -1259,130 +1453,30 @@
           "id",
           "product_id",
           "measurement_id",
-          "amount",
+          "current_stock",
+          "creator",
           "created_at",
           "updated_at"
         ],
         "title": "InventoryResponse"
       },
-      "InventoryUpdate": {
+      "LoginForm": {
         "properties": {
-          "product_id": {
+          "username": {
             "type": "string",
-            "format": "uuid",
-            "title": "Product Id"
+            "title": "Username"
           },
-          "measurement_id": {
+          "password": {
             "type": "string",
-            "format": "uuid",
-            "title": "Measurement Id"
-          },
-          "amount": {
-            "type": "number",
-            "title": "Amount"
+            "title": "Password"
           }
         },
         "type": "object",
         "required": [
-          "product_id",
-          "measurement_id",
-          "amount"
+          "username",
+          "password"
         ],
-        "title": "InventoryUpdate"
-      },
-      "InventoryUpdateRequestCreate": {
-        "properties": {
-          "inventory_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Inventory Id"
-          },
-          "product_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Product Id"
-          },
-          "measurement_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Measurement Id"
-          },
-          "amount": {
-            "type": "number",
-            "title": "Amount"
-          },
-          "requested_by": {
-            "type": "string",
-            "title": "Requested By"
-          }
-        },
-        "type": "object",
-        "required": [
-          "inventory_id",
-          "product_id",
-          "measurement_id",
-          "amount",
-          "requested_by"
-        ],
-        "title": "InventoryUpdateRequestCreate"
-      },
-      "InventoryUpdateRequestResponse": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Id"
-          },
-          "inventory_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Inventory Id"
-          },
-          "product_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Product Id"
-          },
-          "measurement_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Measurement Id"
-          },
-          "amount": {
-            "type": "number",
-            "title": "Amount"
-          },
-          "status": {
-            "$ref": "#/components/schemas/ApprovalStatus"
-          },
-          "requested_by": {
-            "type": "string",
-            "title": "Requested By"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Created At"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Updated At"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "inventory_id",
-          "product_id",
-          "measurement_id",
-          "amount",
-          "status",
-          "requested_by",
-          "created_at",
-          "updated_at"
-        ],
-        "title": "InventoryUpdateRequestResponse"
+        "title": "LoginForm"
       },
       "MeasurementConversionCreate": {
         "properties": {
@@ -1396,6 +1490,10 @@
             "format": "uuid",
             "title": "Converted Measurement Id"
           },
+          "base_measurement_to_converted_amount": {
+            "type": "number",
+            "title": "Base Measurement To Converted Amount"
+          },
           "name": {
             "type": "string",
             "title": "Name"
@@ -1405,6 +1503,7 @@
         "required": [
           "base_measurement_id",
           "converted_measurement_id",
+          "base_measurement_to_converted_amount",
           "name"
         ],
         "title": "MeasurementConversionCreate"
@@ -1426,6 +1525,10 @@
             "format": "uuid",
             "title": "Converted Measurement Id"
           },
+          "base_measurement_to_converted_amount": {
+            "type": "number",
+            "title": "Base Measurement To Converted Amount"
+          },
           "name": {
             "type": "string",
             "title": "Name"
@@ -1446,6 +1549,7 @@
           "id",
           "base_measurement_id",
           "converted_measurement_id",
+          "base_measurement_to_converted_amount",
           "name",
           "created_at",
           "updated_at"
@@ -1464,6 +1568,10 @@
             "format": "uuid",
             "title": "Converted Measurement Id"
           },
+          "base_measurement_to_converted_amount": {
+            "type": "number",
+            "title": "Base Measurement To Converted Amount"
+          },
           "name": {
             "type": "string",
             "title": "Name"
@@ -1473,6 +1581,7 @@
         "required": [
           "base_measurement_id",
           "converted_measurement_id",
+          "base_measurement_to_converted_amount",
           "name"
         ],
         "title": "MeasurementConversionUpdate"
@@ -1641,6 +1750,133 @@
         ],
         "title": "ProductUpdate"
       },
+      "TransactionApprove": {
+        "properties": {
+          "ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "title": "Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ids"
+        ],
+        "title": "TransactionApprove"
+      },
+      "TransactionCreate": {
+        "properties": {
+          "inventory_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Inventory Id"
+          },
+          "measurement_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Measurement Id"
+          },
+          "transaction_type": {
+            "$ref": "#/components/schemas/TransactionType"
+          },
+          "unit_price": {
+            "type": "number",
+            "title": "Unit Price"
+          },
+          "quantity": {
+            "type": "number",
+            "title": "Quantity"
+          }
+        },
+        "type": "object",
+        "required": [
+          "inventory_id",
+          "measurement_id",
+          "transaction_type",
+          "unit_price",
+          "quantity"
+        ],
+        "title": "TransactionCreate"
+      },
+      "TransactionResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "inventory_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Inventory Id"
+          },
+          "measurement_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Measurement Id"
+          },
+          "transaction_type": {
+            "$ref": "#/components/schemas/TransactionType"
+          },
+          "creator": {
+            "$ref": "#/components/schemas/UserCreatedByResponse"
+          },
+          "unit_price": {
+            "type": "number",
+            "title": "Unit Price"
+          },
+          "quantity": {
+            "type": "number",
+            "title": "Quantity"
+          },
+          "total_price": {
+            "type": "number",
+            "title": "Total Price"
+          },
+          "is_approved": {
+            "type": "boolean",
+            "title": "Is Approved"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "inventory_id",
+          "measurement_id",
+          "transaction_type",
+          "creator",
+          "unit_price",
+          "quantity",
+          "total_price",
+          "is_approved",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "TransactionResponse"
+      },
+      "TransactionType": {
+        "type": "string",
+        "enum": [
+          "SALE",
+          "PURCHASE",
+          "ADJUSTMENT",
+          "RETURN"
+        ],
+        "title": "TransactionType"
+      },
       "UserCreate": {
         "properties": {
           "username": {
@@ -1667,6 +1903,28 @@
           "password"
         ],
         "title": "UserCreate"
+      },
+      "UserCreatedByResponse": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "name",
+          "role"
+        ],
+        "title": "UserCreatedByResponse"
       },
       "UserResponse": {
         "properties": {
@@ -1782,6 +2040,17 @@
           "type"
         ],
         "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "OAuth2PasswordBearer": {
+        "type": "oauth2",
+        "flows": {
+          "password": {
+            "scopes": {},
+            "tokenUrl": "/auth/user/token"
+          }
+        }
       }
     }
   }

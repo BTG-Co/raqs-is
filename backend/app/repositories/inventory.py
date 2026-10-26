@@ -33,15 +33,6 @@ class InventoryRepository:
         result = self._session.scalars(stmt)
         return list(result.all())
 
-    def update(self, inventory: Inventory, data: dict) -> Inventory:
-        for k, v in data.items():
-            setattr(inventory, k, v)
-        
-        self._session.commit()
-        self._session.refresh(inventory)
-
-        return inventory
-
     def delete(self, inventory: Inventory) -> None:
         self._session.delete(inventory)
         self._session.commit()

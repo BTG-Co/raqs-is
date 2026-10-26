@@ -28,7 +28,7 @@ export function sumInventoryByProduct(inventory: Inventory[], products: Product[
   const names = new Map(products.map((product) => [product.id, product.name]));
   const totals = new Map<string, number>();
   for (const row of inventory) {
-    totals.set(row.product_id, (totals.get(row.product_id) ?? 0) + row.amount);
+    totals.set(row.product_id, (totals.get(row.product_id) ?? 0) + row.current_stock);
   }
   return [...totals.entries()]
     .map(([productId, amount]) => ({
@@ -75,9 +75,9 @@ export function stockRows(
       productName: productNames.get(row.product_id) ?? "Unknown product",
       measurementName: measurement?.name ?? "Unknown",
       measurementShort: measurement?.short_name ?? "",
-      amount: row.amount,
+      amount: row.current_stock,
       updatedAt: row.updated_at,
-      low: isLowStock(row.amount),
+      low: isLowStock(row.current_stock),
     };
   });
 }

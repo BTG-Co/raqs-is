@@ -1,15 +1,14 @@
-import { useMemo, useState, type ReactNode } from "react";
-import { Alert, FlatList, Pressable, Text, TextInput, View } from "react-native";
+import { type ReactNode } from "react";
+import { Alert, FlatList, Pressable, Text, View } from "react-native";
 import { ApiError } from "@raqs/shared";
 import { RetryBanner } from "./retry-banner";
-import { colors, spacing, ui } from "../theme";
+import { spacing, ui } from "../theme";
 
 type Props<T> = {
   rows: T[];
   rowKey: (row: T) => string;
   title: (row: T) => string;
   subtitle?: (row: T) => string;
-  searchText: (row: T) => string;
   isLoading: boolean;
   isRefreshing: boolean;
   error: unknown;
@@ -28,7 +27,6 @@ export function ResourceList<T>({
   rowKey,
   title,
   subtitle,
-  searchText,
   isLoading,
   isRefreshing,
   error,
@@ -41,13 +39,6 @@ export function ResourceList<T>({
   header,
   emptyLabel,
 }: Props<T>) {
-  const [query, setQuery] = useState("");
-  const filtered = useMemo(() => {
-    const needle = query.trim().toLowerCase();
-    if (!needle) return rows;
-    return rows.filter((row) => searchText(row).toLowerCase().includes(needle));
-  }, [query, rows, searchText]);
-
   function openActions(row: T) {
     if (!onEdit && !onDelete) return;
     const actions: { text: string; style?: "destructive" | "cancel"; onPress?: () => void }[] = [];
@@ -86,24 +77,12 @@ export function ResourceList<T>({
         />
       ) : null}
       <FlatList
-        data={filtered}
+        data={rows}
         keyExtractor={rowKey}
         refreshing={isRefreshing}
         onRefresh={onRefresh}
         contentContainerStyle={{ padding: spacing[4], gap: spacing[3], paddingBottom: 96, flexGrow: 1 }}
-        ListHeaderComponent={
-          <View style={{ gap: spacing[3], marginBottom: spacing[3] }}>
-            {header}
-            <TextInput
-              accessibilityLabel="Search"
-              placeholder="Search"
-              placeholderTextColor={colors.textMuted}
-              value={query}
-              onChangeText={setQuery}
-              style={ui.input}
-            />
-          </View>
-        }
+        ListHeaderComponent={header ? <View style={{ marginBottom: spacing[3] }}>{header}</View> : null}
         ListEmptyComponent={
           isLoading ? null : (
             <Text style={ui.muted}>{emptyLabel}</Text>

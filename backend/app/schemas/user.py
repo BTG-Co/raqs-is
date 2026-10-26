@@ -15,6 +15,12 @@ class UserUpdate(BaseModel):
     role: UserRole
     password: str
 
+class UserCreatedByResponse(BaseModel):
+    username: str
+    name: str
+    role: UserRole
+
+    model_config = ConfigDict(from_attributes=True)
 class UserResponse(BaseModel):
     id: UUID
     username: str

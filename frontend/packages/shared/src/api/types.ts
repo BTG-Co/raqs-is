@@ -38,6 +38,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/user/token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Login For Access Token */
+        post: operations["login_for_access_token_auth_user_token_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Me */
+        get: operations["me_auth_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/products": {
         parameters: {
             query?: never;
@@ -106,59 +140,6 @@ export interface paths {
         post?: never;
         /** Delete */
         delete: operations["delete_inventory__inventory_id__delete"];
-        options?: never;
-        head?: never;
-        /** Update */
-        patch: operations["update_inventory__inventory_id__patch"];
-        trace?: never;
-    };
-    "/inventory_update_requests": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get List */
-        get: operations["get_list_inventory_update_requests_get"];
-        put?: never;
-        /** Create */
-        post: operations["create_inventory_update_requests_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/inventory_update_requests/{request_id}/approve": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Approve */
-        post: operations["approve_inventory_update_requests__request_id__approve_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/inventory_update_requests/{request_id}/reject": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Reject */
-        post: operations["reject_inventory_update_requests__request_id__reject_post"];
-        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -275,15 +256,63 @@ export interface paths {
         patch: operations["update_users__user_id__patch"];
         trace?: never;
     };
+    "/transactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get List */
+        get: operations["get_list_transactions_get"];
+        put?: never;
+        /** Create */
+        post: operations["create_transactions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/transactions/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve */
+        post: operations["approve_transactions_approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/transactions/{transaction_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get By Id */
+        get: operations["get_by_id_transactions__transaction_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete */
+        delete: operations["delete_transactions__transaction_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /**
-         * ApprovalStatus
-         * @enum {string}
-         */
-        ApprovalStatus: "PENDING" | "APPROVED" | "REJECTED";
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -301,8 +330,8 @@ export interface components {
              * Format: uuid
              */
             measurement_id: string;
-            /** Amount */
-            amount: number;
+            /** Current Stock */
+            current_stock: number;
         };
         /** InventoryResponse */
         InventoryResponse: {
@@ -321,8 +350,9 @@ export interface components {
              * Format: uuid
              */
             measurement_id: string;
-            /** Amount */
-            amount: number;
+            /** Current Stock */
+            current_stock: number;
+            creator: components["schemas"]["UserCreatedByResponse"];
             /**
              * Created At
              * Format: date-time
@@ -334,80 +364,12 @@ export interface components {
              */
             updated_at: string;
         };
-        /** InventoryUpdate */
-        InventoryUpdate: {
-            /**
-             * Product Id
-             * Format: uuid
-             */
-            product_id: string;
-            /**
-             * Measurement Id
-             * Format: uuid
-             */
-            measurement_id: string;
-            /** Amount */
-            amount: number;
-        };
-        /** InventoryUpdateRequestCreate */
-        InventoryUpdateRequestCreate: {
-            /**
-             * Inventory Id
-             * Format: uuid
-             */
-            inventory_id: string;
-            /**
-             * Product Id
-             * Format: uuid
-             */
-            product_id: string;
-            /**
-             * Measurement Id
-             * Format: uuid
-             */
-            measurement_id: string;
-            /** Amount */
-            amount: number;
-            /** Requested By */
-            requested_by: string;
-        };
-        /** InventoryUpdateRequestResponse */
-        InventoryUpdateRequestResponse: {
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /**
-             * Inventory Id
-             * Format: uuid
-             */
-            inventory_id: string;
-            /**
-             * Product Id
-             * Format: uuid
-             */
-            product_id: string;
-            /**
-             * Measurement Id
-             * Format: uuid
-             */
-            measurement_id: string;
-            /** Amount */
-            amount: number;
-            status: components["schemas"]["ApprovalStatus"];
-            /** Requested By */
-            requested_by: string;
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
-            /**
-             * Updated At
-             * Format: date-time
-             */
-            updated_at: string;
+        /** LoginForm */
+        LoginForm: {
+            /** Username */
+            username: string;
+            /** Password */
+            password: string;
         };
         /** MeasurementConversionCreate */
         MeasurementConversionCreate: {
@@ -421,6 +383,8 @@ export interface components {
              * Format: uuid
              */
             converted_measurement_id: string;
+            /** Base Measurement To Converted Amount */
+            base_measurement_to_converted_amount: number;
             /** Name */
             name: string;
         };
@@ -441,6 +405,8 @@ export interface components {
              * Format: uuid
              */
             converted_measurement_id: string;
+            /** Base Measurement To Converted Amount */
+            base_measurement_to_converted_amount: number;
             /** Name */
             name: string;
             /**
@@ -466,6 +432,8 @@ export interface components {
              * Format: uuid
              */
             converted_measurement_id: string;
+            /** Base Measurement To Converted Amount */
+            base_measurement_to_converted_amount: number;
             /** Name */
             name: string;
         };
@@ -546,6 +514,72 @@ export interface components {
              */
             base_measurement_id: string;
         };
+        /** TransactionApprove */
+        TransactionApprove: {
+            /** Ids */
+            ids: string[];
+        };
+        /** TransactionCreate */
+        TransactionCreate: {
+            /**
+             * Inventory Id
+             * Format: uuid
+             */
+            inventory_id: string;
+            /**
+             * Measurement Id
+             * Format: uuid
+             */
+            measurement_id: string;
+            transaction_type: components["schemas"]["TransactionType"];
+            /** Unit Price */
+            unit_price: number;
+            /** Quantity */
+            quantity: number;
+        };
+        /** TransactionResponse */
+        TransactionResponse: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Inventory Id
+             * Format: uuid
+             */
+            inventory_id: string;
+            /**
+             * Measurement Id
+             * Format: uuid
+             */
+            measurement_id: string;
+            transaction_type: components["schemas"]["TransactionType"];
+            creator: components["schemas"]["UserCreatedByResponse"];
+            /** Unit Price */
+            unit_price: number;
+            /** Quantity */
+            quantity: number;
+            /** Total Price */
+            total_price: number;
+            /** Is Approved */
+            is_approved: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /**
+         * TransactionType
+         * @enum {string}
+         */
+        TransactionType: "SALE" | "PURCHASE" | "ADJUSTMENT" | "RETURN";
         /** UserCreate */
         UserCreate: {
             /** Username */
@@ -555,6 +589,14 @@ export interface components {
             /** Password */
             password: string;
             /** @default STAFF */
+            role: components["schemas"]["UserRole"];
+        };
+        /** UserCreatedByResponse */
+        UserCreatedByResponse: {
+            /** Username */
+            username: string;
+            /** Name */
+            name: string;
             role: components["schemas"]["UserRole"];
         };
         /** UserResponse */
@@ -653,6 +695,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+        };
+    };
+    login_for_access_token_auth_user_token_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/x-www-form-urlencoded": components["schemas"]["LoginForm"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    me_auth_me_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserResponse"];
                 };
             };
         };
@@ -909,156 +1004,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    update_inventory__inventory_id__patch: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                inventory_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["InventoryUpdate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["InventoryResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_list_inventory_update_requests_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["InventoryUpdateRequestResponse"][];
-                };
-            };
-        };
-    };
-    create_inventory_update_requests_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["InventoryUpdateRequestCreate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["InventoryUpdateRequestResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    approve_inventory_update_requests__request_id__approve_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                request_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["InventoryUpdateRequestResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    reject_inventory_update_requests__request_id__reject_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                request_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["InventoryUpdateRequestResponse"];
                 };
             };
             /** @description Validation Error */
@@ -1509,6 +1454,154 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UserResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_list_transactions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransactionResponse"][];
+                };
+            };
+        };
+    };
+    create_transactions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransactionCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransactionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    approve_transactions_approve_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransactionApprove"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransactionResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_by_id_transactions__transaction_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                transaction_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransactionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_transactions__transaction_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                transaction_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */

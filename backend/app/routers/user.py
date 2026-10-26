@@ -5,12 +5,13 @@ from fastapi import APIRouter, Depends, status
 
 from app.schemas.user import UserCreate, UserResponse, UserUpdate
 from app.services.user import UserService
-from app.core.dependencies import get_user_service
+from app.core.dependencies import get_user_service, require_admin
 
 
 router = APIRouter(
     prefix="/users",
-    tags=["users"]
+    tags=["users"],
+    dependencies=[Depends(require_admin)]
 )
 
 @router.post(

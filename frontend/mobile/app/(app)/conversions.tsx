@@ -17,7 +17,6 @@ export default function ConversionsScreen() {
       rowKey={(row) => row.id}
       title={(row) => row.name}
       subtitle={(row) => `${names.get(row.base_measurement_id) ?? "Unknown"} → ${names.get(row.converted_measurement_id) ?? "Unknown"}`}
-      searchText={(row) => `${row.name} ${names.get(row.base_measurement_id) ?? ""} ${names.get(row.converted_measurement_id) ?? ""}`}
       isLoading={conversions.isLoading}
       isRefreshing={conversions.isRefetching}
       error={conversions.error ?? measurements.error}

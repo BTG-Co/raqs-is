@@ -4,18 +4,19 @@ from fastapi import APIRouter, Depends, status
 
 from app.schemas.measurement import MeasurementCreate, MeasurementResponse, MeasurementUpdate
 from app.services.measurement import MeasurementService
-from app.core.dependencies import get_measurement_service
+from app.core.dependencies import get_current_user, get_measurement_service, require_admin
 
 
 router = APIRouter(
     prefix="/measurements",
-    tags=["measurements"]
+    tags=["measurements"],
 )
 
 @router.post(
     "",
     status_code=status.HTTP_200_OK,
-    response_model=MeasurementResponse
+    response_model=MeasurementResponse,
+    dependencies=[Depends(require_admin)],
 )
 def create(
     payload: MeasurementCreate,
@@ -26,7 +27,8 @@ def create(
 @router.get(
     "",
     status_code=status.HTTP_200_OK,
-    response_model=list[MeasurementResponse]
+    response_model=list[MeasurementResponse],
+    dependencies=[Depends(get_current_user)],
 )
 def get_measurement_list(
     service: Annotated[MeasurementService, Depends(get_measurement_service)]
@@ -36,7 +38,8 @@ def get_measurement_list(
 @router.get(
     "/{measurement_id}",
     status_code=status.HTTP_200_OK,
-    response_model=MeasurementResponse
+    response_model=MeasurementResponse,
+    dependencies=[Depends(get_current_user)],
 )
 def get_by_id(
     measurement_id: UUID,
@@ -47,7 +50,8 @@ def get_by_id(
 @router.patch(
     "/{measurement_id}",
     status_code=status.HTTP_200_OK,
-    response_model=MeasurementResponse
+    response_model=MeasurementResponse,
+    dependencies=[Depends(require_admin)],
 )
 def update(
     measurement_id: UUID,
@@ -59,7 +63,8 @@ def update(
 @router.delete(
     "/{measurement_id}",
     status_code=status.HTTP_200_OK,
-    response_model=None
+    response_model=None,
+    dependencies=[Depends(require_admin)],
 )
 def delete(
     measurement_id: UUID,

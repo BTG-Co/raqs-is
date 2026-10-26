@@ -8,11 +8,10 @@ export type ProductUpdate = Schemas["ProductUpdate"];
 
 export type Inventory = Schemas["InventoryResponse"];
 export type InventoryCreate = Schemas["InventoryCreate"];
-export type InventoryUpdate = Schemas["InventoryUpdate"];
 
-export type InventoryUpdateRequest = Schemas["InventoryUpdateRequestResponse"];
-export type InventoryUpdateRequestCreate = Schemas["InventoryUpdateRequestCreate"];
-export type ApprovalStatus = Schemas["ApprovalStatus"];
+export type Transaction = Schemas["TransactionResponse"];
+export type TransactionCreate = Schemas["TransactionCreate"];
+export type TransactionType = Schemas["TransactionType"];
 
 export type Measurement = Schemas["MeasurementResponse"];
 export type MeasurementCreate = Schemas["MeasurementCreate"];

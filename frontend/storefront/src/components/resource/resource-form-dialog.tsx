@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { useForm, type DefaultValues, type FieldValues, type Path, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { ZodType } from "zod";
@@ -15,13 +16,21 @@ type Option = { value: string; label: string };
 export type FormField =
   | { kind: "text" | "password" | "url"; name: string; label: string; autoComplete?: string }
   | { kind: "number"; name: string; label: string }
-  | { kind: "select"; name: string; label: string; options: Option[]; emptyHint: string };
+  | {
+      kind: "select";
+      name: string;
+      label: string;
+      options: Option[];
+      emptyHint: string;
+      /** Clear these fields when this select changes. */
+      clears?: string[];
+    };
 
 type Props<T extends FieldValues> = {
   open: boolean;
   title: string;
   schema: ZodType<T>;
-  fields: FormField[];
+  fields: FormField[] | ((values: T) => FormField[]);
   defaultValues: DefaultValues<T>;
   onSubmit: (values: T) => Promise<void>;
   onClose: () => void;
@@ -44,14 +53,17 @@ export function ResourceFormDialog<T extends FieldValues>({
     defaultValues,
   });
 
-const serializedDefaults = JSON.stringify(defaultValues);
+  const serializedDefaults = JSON.stringify(defaultValues);
   useEffect(() => {
     if (!open) return;
     form.reset(defaultValues);
     setFormError(null);
   }, [open, serializedDefaults]);
 
-  const missingParent = fields.find(
+  const watchedValues = form.watch();
+  const resolvedFields = typeof fields === "function" ? fields(watchedValues) : fields;
+
+  const missingParent = resolvedFields.find(
     (field) => field.kind === "select" && field.options.length === 0,
   );
 
@@ -86,7 +98,7 @@ const serializedDefaults = JSON.stringify(defaultValues);
           {missingParent && missingParent.kind === "select" ? (
             <p className="text-sm text-muted">{missingParent.emptyHint}</p>
           ) : null}
-          {fields.map((field) => (
+          {resolvedFields.map((field) => (
             <div key={field.name} className="space-y-1.5">
               {field.kind === "select" ? (
                 <SearchableSelect
@@ -94,7 +106,12 @@ const serializedDefaults = JSON.stringify(defaultValues);
                   label={field.label}
                   options={field.options}
                   value={String(form.watch(field.name as Path<T>) ?? "")}
-                  onChange={(value) => form.setValue(field.name as Path<T>, value as never, { shouldValidate: true })}
+                  onChange={(value) => {
+                    form.setValue(field.name as Path<T>, value as never, { shouldValidate: true });
+                    for (const name of field.clears ?? []) {
+                      form.setValue(name as Path<T>, "" as never, { shouldValidate: true });
+                    }
+                  }}
                   error={form.formState.errors[field.name]?.message as string | undefined}
                 />
               ) : (
@@ -145,46 +162,103 @@ function SearchableSelect({
   error?: string;
 }) {
   const listId = useId();
+  const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [activeIndex, setActiveIndex] = useState(0);
   const selected = options.find((option) => option.value === value);
   const filtered = options.filter((option) => option.label.toLowerCase().includes(query.trim().toLowerCase()));
 
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [query, open]);
+
+  function close() {
+    setOpen(false);
+    setQuery("");
+  }
+
+  function choose(next: string) {
+    onChange(next);
+    close();
+  }
+
   return (
-    <div>
+    <div className={open ? "relative z-20" : "relative"}>
       <Label htmlFor={name}>{label}</Label>
-      <input
-        id={name}
-        role="combobox"
-        aria-expanded="true"
-        aria-controls={listId}
-        aria-autocomplete="list"
-        aria-invalid={Boolean(error)}
-        className="mt-1.5 h-10 w-full rounded-lg border border-line bg-card px-3 text-sm"
-        placeholder={selected?.label ?? "Search"}
-        value={query}
-        onChange={(event) => setQuery(event.target.value)}
-      />
-      {selected && !query ? <p className="mt-1 text-xs text-muted">Selected: {selected.label}</p> : null}
-      <ul id={listId} role="listbox" aria-label={label} className="mt-1 max-h-40 overflow-auto rounded-lg border border-line">
-        {filtered.length === 0 ? (
-          <li className="px-3 py-2 text-sm text-muted">No matches</li>
-        ) : (
-          filtered.map((option) => (
-            <li key={option.value} role="option" aria-selected={option.value === value}>
-              <button
-                type="button"
-                className={`w-full px-3 py-2 text-left text-sm ${option.value === value ? "bg-primary-50 font-medium" : "hover:bg-primary-50"}`}
-                onClick={() => {
-                  onChange(option.value);
-                  setQuery("");
-                }}
-              >
-                {option.label}
-              </button>
-            </li>
-          ))
-        )}
-      </ul>
+      <div className="relative mt-1.5">
+        <Input
+          id={name}
+          role="combobox"
+          aria-expanded={open}
+          aria-controls={listId}
+          aria-autocomplete="list"
+          aria-invalid={Boolean(error)}
+          autoComplete="off"
+          className="pr-9"
+          placeholder={selected?.label ?? "Search"}
+          value={open ? query : (selected?.label ?? "")}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setOpen(true);
+          }}
+          onFocus={() => {
+            setQuery("");
+            setOpen(true);
+          }}
+          onBlur={close}
+          onKeyDown={(event) => {
+            if (!open && event.key.length === 1 && !event.metaKey && !event.ctrlKey && !event.altKey) {
+              event.preventDefault();
+              setQuery(event.key);
+              setOpen(true);
+              return;
+            }
+            if (event.key === "ArrowDown") {
+              event.preventDefault();
+              setOpen(true);
+              setActiveIndex((index) => Math.min(index + 1, Math.max(filtered.length - 1, 0)));
+            } else if (event.key === "ArrowUp") {
+              event.preventDefault();
+              setActiveIndex((index) => Math.max(index - 1, 0));
+            } else if (event.key === "Enter" && open && filtered[activeIndex]) {
+              event.preventDefault();
+              choose(filtered[activeIndex].value);
+            } else if (event.key === "Escape") {
+              event.preventDefault();
+              close();
+            }
+          }}
+        />
+        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+        {open ? (
+          <ul
+            id={listId}
+            role="listbox"
+            aria-label={label}
+            className="absolute z-10 mt-1 max-h-40 w-full overflow-auto rounded-lg border border-line bg-card shadow-card"
+          >
+            {filtered.length === 0 ? (
+              <li className="px-3 py-2 text-sm text-muted">No matches</li>
+            ) : (
+              filtered.map((option, index) => (
+                <li key={option.value} role="option" aria-selected={option.value === value}>
+                  <button
+                    type="button"
+                    className={`w-full px-3 py-2 text-left text-sm ${
+                      index === activeIndex || option.value === value ? "bg-primary-50 font-medium" : "hover:bg-primary-50"
+                    }`}
+                    onMouseDown={(event) => event.preventDefault()}
+                    onMouseEnter={() => setActiveIndex(index)}
+                    onClick={() => choose(option.value)}
+                  >
+                    {option.label}
+                  </button>
+                </li>
+              ))
+            )}
+          </ul>
+        ) : null}
+      </div>
       {error ? <p className="mt-1 text-xs text-error">{error}</p> : null}
     </div>
   );

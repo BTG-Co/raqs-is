@@ -58,6 +58,7 @@ export default function MeasurementConversionsPage() {
       options,
       emptyHint: "Create a measurement before adding a conversion.",
     },
+    { kind: "number", name: "base_measurement_to_converted_amount", label: "Amount of base per converted unit" },
   ];
 
   return (
@@ -76,7 +77,6 @@ export default function MeasurementConversionsPage() {
           void measurements.refetch();
         }}
         rowKey={(row) => row.id}
-        searchText={(row) => `${row.name} ${names.get(row.base_measurement_id) ?? ""} ${names.get(row.converted_measurement_id) ?? ""}`}
         emptyLabel="No conversions yet."
         addLabel="Add conversion"
         onAdd={() => { setEditing(null); setOpen(true); }}
@@ -110,6 +110,13 @@ export default function MeasurementConversionsPage() {
             cell: (row) => names.get(row.converted_measurement_id) ?? "Unknown",
           },
           {
+            id: "amount",
+            header: "Base per converted",
+            align: "right",
+            sortValue: (row) => row.base_measurement_to_converted_amount,
+            cell: (row) => row.base_measurement_to_converted_amount,
+          },
+          {
             id: "updated",
             header: "Updated",
             sortValue: (row) => Date.parse(row.updated_at),
@@ -128,8 +135,9 @@ export default function MeasurementConversionsPage() {
                 name: editing.name,
                 base_measurement_id: editing.base_measurement_id,
                 converted_measurement_id: editing.converted_measurement_id,
+                base_measurement_to_converted_amount: editing.base_measurement_to_converted_amount,
               }
-            : { name: "", base_measurement_id: "", converted_measurement_id: "" }
+            : { name: "", base_measurement_id: "", converted_measurement_id: "", base_measurement_to_converted_amount: 1 }
         }
         submitLabel="Save"
         onClose={() => { setOpen(false); setEditing(null); }}

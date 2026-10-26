@@ -2,8 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useResources } from "../api/context";
 import type {
   InventoryCreate,
-  InventoryUpdate,
-  InventoryUpdateRequestCreate,
+  TransactionCreate,
   MeasurementConversionCreate,
   MeasurementConversionUpdate,
   MeasurementCreate,
@@ -19,7 +18,7 @@ export const queryKeys = {
   product: (id: string) => ["products", id] as const,
   inventory: ["inventory"] as const,
   inventoryItem: (id: string) => ["inventory", id] as const,
-  inventoryUpdateRequests: ["inventory-update-requests"] as const,
+  transactions: ["transactions"] as const,
   measurements: ["measurements"] as const,
   measurement: (id: string) => ["measurements", id] as const,
   measurementConversions: ["measurement-conversions"] as const,
@@ -81,18 +80,6 @@ export function useCreateInventory() {
   });
 }
 
-export function useUpdateInventory() {
-  const api = useResources();
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, body }: { id: string; body: InventoryUpdate }) => api.inventory.update(id, body),
-    onSuccess: (_data, variables) => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.inventory });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.inventoryItem(variables.id) });
-    },
-  });
-}
-
 export function useDeleteInventory() {
   const api = useResources();
   const queryClient = useQueryClient();
@@ -102,6 +89,44 @@ export function useDeleteInventory() {
       void queryClient.invalidateQueries({ queryKey: queryKeys.inventory });
       void queryClient.invalidateQueries({ queryKey: queryKeys.inventoryItem(id) });
     },
+  });
+}
+
+export function useTransactions() {
+  const api = useResources();
+  return useQuery({
+    queryKey: queryKeys.transactions,
+    queryFn: () => api.transactions.list(),
+  });
+}
+
+export function useCreateTransaction() {
+  const api = useResources();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: TransactionCreate) => api.transactions.create(body),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.transactions }),
+  });
+}
+
+export function useApproveTransactions() {
+  const api = useResources();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (ids: string[]) => api.transactions.approve(ids),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.transactions });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.inventory });
+    },
+  });
+}
+
+export function useDeleteTransaction() {
+  const api = useResources();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.transactions.delete(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.transactions }),
   });
 }
 
@@ -209,44 +234,6 @@ export function useUpdateUser() {
       void queryClient.invalidateQueries({ queryKey: queryKeys.users });
       void queryClient.invalidateQueries({ queryKey: queryKeys.user(variables.id) });
     },
-  });
-}
-
-export function useInventoryUpdateRequests() {
-  const api = useResources();
-  return useQuery({
-    queryKey: queryKeys.inventoryUpdateRequests,
-    queryFn: () => api.inventoryUpdateRequests.list(),
-  });
-}
-
-export function useCreateInventoryUpdateRequest() {
-  const api = useResources();
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (body: InventoryUpdateRequestCreate) => api.inventoryUpdateRequests.create(body),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.inventoryUpdateRequests }),
-  });
-}
-
-export function useApproveInventoryUpdateRequest() {
-  const api = useResources();
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => api.inventoryUpdateRequests.approve(id),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.inventoryUpdateRequests });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.inventory });
-    },
-  });
-}
-
-export function useRejectInventoryUpdateRequest() {
-  const api = useResources();
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => api.inventoryUpdateRequests.reject(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.inventoryUpdateRequests }),
   });
 }
 

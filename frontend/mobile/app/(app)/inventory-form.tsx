@@ -1,30 +1,13 @@
-import { Alert } from "react-native";
-import { router, useLocalSearchParams } from "expo-router";
-import {
-  inventoryCreateSchema,
-  isAdmin,
-  useCreateInventory,
-  useCreateInventoryUpdateRequest,
-  useInventoryList,
-  useMeasurements,
-  useProducts,
-  useUpdateInventory,
-} from "@raqs/shared";
+import { Redirect, router } from "expo-router";
+import { inventoryCreateSchema, isAdmin, useCreateInventory, useMeasurements, useProducts } from "@raqs/shared";
 import { useAuth } from "../../src/auth/auth-context";
 import { FormScreen } from "../../src/components/form-screen";
 
 export default function InventoryFormScreen() {
   const { session } = useAuth();
-  const params = useLocalSearchParams<{ id?: string }>();
-  const id = typeof params.id === "string" ? params.id : undefined;
-  const inventory = useInventoryList();
   const products = useProducts();
   const measurements = useMeasurements();
   const createRow = useCreateInventory();
-  const updateRow = useUpdateInventory();
-  const createRequest = useCreateInventoryUpdateRequest();
-  const existing = inventory.data?.find((item) => item.id === id);
-  const staffEdit = Boolean(existing && session && !isAdmin(session.user.role));
   const fields = [
     {
       kind: "select" as const,
@@ -40,36 +23,19 @@ export default function InventoryFormScreen() {
       options: (measurements.data ?? []).map((item) => ({ value: item.id, label: `${item.name} (${item.short_name})` })),
       emptyHint: "Create a measurement before adding inventory.",
     },
-    { kind: "number" as const, name: "amount", label: "Amount" },
+    { kind: "number" as const, name: "current_stock", label: "Opening stock" },
   ];
 
-  if (id && !existing) return null;
+  if (session && !isAdmin(session.user.role)) return <Redirect href="/(app)/(tabs)/inventory" />;
 
   return (
     <FormScreen
       schema={inventoryCreateSchema}
       fields={fields}
-      defaultValues={
-        existing
-          ? { product_id: existing.product_id, measurement_id: existing.measurement_id, amount: existing.amount }
-          : { product_id: "", measurement_id: "", amount: 0 }
-      }
-      submitLabel={staffEdit ? "Submit for approval" : "Save"}
+      defaultValues={{ product_id: "", measurement_id: "", current_stock: 0 }}
+      submitLabel="Save"
       onSubmit={async (values) => {
-        if (existing && staffEdit) {
-          await createRequest.mutateAsync({
-            inventory_id: existing.id,
-            product_id: values.product_id,
-            measurement_id: values.measurement_id,
-            amount: values.amount,
-            requested_by: session?.user.username ?? "",
-          });
-          Alert.alert("Submitted", "An admin needs to approve this update.");
-        } else if (existing) {
-          await updateRow.mutateAsync({ id: existing.id, body: values });
-        } else {
-          await createRow.mutateAsync(values);
-        }
+        await createRow.mutateAsync(values);
         router.back();
       }}
     />

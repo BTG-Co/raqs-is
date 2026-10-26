@@ -17,7 +17,6 @@ export default function ProductsScreen() {
       rowKey={(row) => row.id}
       title={(row) => row.name}
       subtitle={(row) => names.get(row.base_measurement_id) ?? "Unknown measurement"}
-      searchText={(row) => `${row.name} ${names.get(row.base_measurement_id) ?? ""}`}
       isLoading={products.isLoading}
       isRefreshing={products.isRefetching}
       error={products.error}

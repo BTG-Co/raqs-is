@@ -39,6 +39,7 @@ export default function ConversionFormScreen() {
       options,
       emptyHint: "Create a measurement before adding a conversion.",
     },
+    { kind: "number" as const, name: "base_measurement_to_converted_amount", label: "Amount of base per converted unit" },
   ];
 
   if (session && !isAdmin(session.user.role)) return <Redirect href="/(app)/(tabs)/inventory" />;
@@ -54,8 +55,9 @@ export default function ConversionFormScreen() {
               name: existing.name,
               base_measurement_id: existing.base_measurement_id,
               converted_measurement_id: existing.converted_measurement_id,
+              base_measurement_to_converted_amount: existing.base_measurement_to_converted_amount,
             }
-          : { name: "", base_measurement_id: "", converted_measurement_id: "" }
+          : { name: "", base_measurement_id: "", converted_measurement_id: "", base_measurement_to_converted_amount: 1 }
       }
       submitLabel="Save"
       onSubmit={async (values) => {

@@ -55,7 +55,6 @@ export default function UsersPage() {
         error={users.error ? errorMessage(users.error) : null}
         onRetry={() => void users.refetch()}
         rowKey={(row) => row.id}
-        searchText={(row) => `${row.name} ${row.username} ${row.role}`}
         emptyLabel="No users yet."
         addLabel="Add user"
         onAdd={() => { setEditing(null); setOpen(true); }}

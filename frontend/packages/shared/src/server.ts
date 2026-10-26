@@ -4,4 +4,5 @@ export * from "./api/client";
 export * from "./api/resources";
 export * from "./auth/types";
 export * from "./auth/mock";
+export * from "./auth/jwt";
 export * from "./permissions";

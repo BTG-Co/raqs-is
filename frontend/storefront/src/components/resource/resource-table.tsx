@@ -6,7 +6,6 @@ import { Button } from "../ui/button";
 import { Dialog, DialogContent } from "../ui/dialog";
 import { Skeleton } from "../ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
-import { usePageSearch } from "../shell/search-context";
 
 export type Column<T> = {
   id: string;
@@ -20,7 +19,6 @@ type Props<T> = {
   rows: T[];
   columns: Column<T>[];
   rowKey: (row: T) => string;
-  searchText: (row: T) => string;
   isLoading?: boolean;
   error?: string | null;
   onRetry?: () => void;
@@ -39,7 +37,6 @@ export function ResourceTable<T>({
   rows,
   columns,
   rowKey,
-  searchText,
   isLoading,
   error,
   onRetry,
@@ -53,37 +50,26 @@ export function ResourceTable<T>({
   defaultSort,
   pageSize = 10,
 }: Props<T>) {
-  const { query, setEnabled, setQuery } = usePageSearch();
   const [sort, setSort] = useState(defaultSort ?? { id: columns[0]?.id ?? "", direction: "asc" as const });
   const [page, setPage] = useState(0);
   const [pendingDelete, setPendingDelete] = useState<T | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    setEnabled(true);
-    return () => {
-      setEnabled(false);
-      setQuery("");
-    };
-  }, [setEnabled, setQuery]);
-
-  useEffect(() => {
     setPage(0);
-  }, [query, sort]);
+  }, [sort]);
 
   const filtered = useMemo(() => {
-    const needle = query.trim().toLowerCase();
-    const matched = needle ? rows.filter((row) => searchText(row).toLowerCase().includes(needle)) : rows;
     const column = columns.find((item) => item.id === sort.id);
-    if (!column?.sortValue) return matched;
+    if (!column?.sortValue) return rows;
     const direction = sort.direction === "asc" ? 1 : -1;
-    return [...matched].sort((a, b) => {
+    return [...rows].sort((a, b) => {
       const left = column.sortValue?.(a);
       const right = column.sortValue?.(b);
       if (typeof left === "number" && typeof right === "number") return (left - right) * direction;
       return String(left).localeCompare(String(right)) * direction;
     });
-  }, [columns, query, rows, searchText, sort]);
+  }, [columns, rows, sort]);
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
   const current = Math.min(page, pageCount - 1);

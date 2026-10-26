@@ -10,8 +10,9 @@ class Inventory(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid4)
     product_id = Column(UUID(as_uuid=True), ForeignKey("products.id") ,nullable=False)
     measurement_id = Column(UUID (as_uuid=True), ForeignKey("measurements.id"),nullable=False)
-    amount = Column(Float, nullable=False)
-
+    current_stock = Column(Float, nullable=False)
+    
+    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
@@ -25,5 +26,11 @@ class Inventory(Base):
     measurement = relationship(
         "Measurement",
         foreign_keys=[measurement_id],
+        back_populates="inventories"
+    )
+
+    creator = relationship(
+        "User",
+        foreign_keys=[created_by],
         back_populates="inventories"
     )

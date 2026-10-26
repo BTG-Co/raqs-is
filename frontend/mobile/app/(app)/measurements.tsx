@@ -15,7 +15,6 @@ export default function MeasurementsScreen() {
       rowKey={(row) => row.id}
       title={(row) => row.name}
       subtitle={(row) => row.short_name}
-      searchText={(row) => `${row.name} ${row.short_name}`}
       isLoading={measurements.isLoading}
       isRefreshing={measurements.isRefetching}
       error={measurements.error}

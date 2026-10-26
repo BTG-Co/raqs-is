@@ -33,6 +33,9 @@ export const measurementConversionSchema = z.object({
   name: requiredText("Name"),
   base_measurement_id: uuidField("base measurement"),
   converted_measurement_id: uuidField("converted measurement"),
+  base_measurement_to_converted_amount: z.coerce
+    .number({ invalid_type_error: "Amount is required." })
+    .positive("Amount must be greater than zero."),
 });
 
 export const measurementConversionCreateSchema = measurementConversionSchema;
@@ -41,11 +44,20 @@ export const measurementConversionUpdateSchema = measurementConversionSchema;
 export const inventorySchema = z.object({
   product_id: uuidField("product"),
   measurement_id: uuidField("measurement"),
-  amount: z.coerce.number({ invalid_type_error: "Amount is required." }).finite("Amount must be a number."),
+  current_stock: z.coerce.number({ invalid_type_error: "Current stock is required." }).finite("Current stock must be a number."),
+});
+
+export const transactionTypeSchema = z.enum(["PURCHASE", "SALE", "ADJUSTMENT", "RETURN"]);
+
+export const transactionCreateSchema = z.object({
+  inventory_id: uuidField("inventory row"),
+  measurement_id: uuidField("measurement"),
+  transaction_type: transactionTypeSchema,
+  quantity: z.coerce.number({ invalid_type_error: "Quantity is required." }).positive("Quantity must be greater than zero."),
+  unit_price: z.coerce.number({ invalid_type_error: "Unit price is required." }).nonnegative("Unit price cannot be negative."),
 });
 
 export const inventoryCreateSchema = inventorySchema;
-export const inventoryUpdateSchema = inventorySchema;
 
 export const userRoleSchema = z.enum(["ADMIN", "STAFF"]);
 
@@ -68,6 +80,7 @@ export type ProductUpdateInput = z.infer<typeof productUpdateSchema>;
 export type MeasurementInput = z.infer<typeof measurementSchema>;
 export type MeasurementConversionInput = z.infer<typeof measurementConversionSchema>;
 export type InventoryInput = z.infer<typeof inventorySchema>;
+export type TransactionInput = z.infer<typeof transactionCreateSchema>;
 export type UserCreateInput = z.infer<typeof userCreateSchema>;
 export type UserUpdateInput = z.infer<typeof userUpdateSchema>;
 

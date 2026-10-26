@@ -11,7 +11,6 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-  const mock = process.env.EXPO_PUBLIC_AUTH_MODE === "mock";
 
   if (ready && session) {
     return <Redirect href={session.user.role === "STAFF" ? "/(app)/(tabs)/inventory" : "/(app)/(tabs)"} />;
@@ -21,11 +20,6 @@ export default function LoginScreen() {
     <View style={[ui.screen, { justifyContent: "center", padding: spacing[4] }]}>
       <View style={[ui.card, { gap: spacing[4] }]}>
         <Text style={ui.title}>Sign in</Text>
-        {mock ? (
-          <Text style={{ backgroundColor: colors.warning, color: colors.textOnWarning, padding: spacing[3], borderRadius: 8 }}>
-            Dev login. Password is not checked.
-          </Text>
-        ) : null}
         {error ? <Text style={{ color: colors.error }}>{error}</Text> : null}
         <TextInput
           accessibilityLabel="Username"

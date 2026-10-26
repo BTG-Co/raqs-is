@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { MockAuthProvider, type Session } from "@raqs/shared";
+import { JwtAuthProvider, type Session } from "@raqs/shared";
 import { secureSessionStorage } from "./storage";
-import { setUnauthorizedHandler } from "../api";
+import { setAccessToken, setUnauthorizedHandler } from "../api";
 
 type AuthValue = {
   ready: boolean;
@@ -12,7 +12,7 @@ type AuthValue = {
 
 const AuthContext = createContext<AuthValue | null>(null);
 
-const auth = new MockAuthProvider(process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:8000", secureSessionStorage);
+const auth = new JwtAuthProvider(process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:8000", secureSessionStorage);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
@@ -22,10 +22,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let active = true;
     void auth.getSession().then((stored) => {
       if (!active) return;
+      setAccessToken(stored?.accessToken ?? null);
       setSession(stored);
       setReady(true);
     });
     setUnauthorizedHandler(() => {
+      setAccessToken(null);
       void auth.logout().then(() => setSession(null));
     });
     return () => {
@@ -39,10 +41,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       session,
       login: async (username, password) => {
         const next = await auth.login(username, password);
+        setAccessToken(next.accessToken);
         setSession(next);
         return next;
       },
       logout: async () => {
+        setAccessToken(null);
         await auth.logout();
         setSession(null);
       },

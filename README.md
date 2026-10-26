@@ -13,14 +13,12 @@ Web (`frontend/storefront/.env.local`, see `frontend/storefront/.env.example`):
 
 ```bash
 NEXT_PUBLIC_API_URL=http://localhost:8000
-NEXT_PUBLIC_AUTH_MODE=mock
 ```
 
 Mobile (`frontend/mobile/.env`, see `frontend/mobile/.env.example`):
 
 ```bash
 EXPO_PUBLIC_API_URL=http://localhost:8000
-EXPO_PUBLIC_AUTH_MODE=mock
 ```
 
 Android emulators cannot use `localhost` for the host machine. Set `EXPO_PUBLIC_API_URL=http://10.0.2.2:8000` when the API is running on the host.
@@ -59,9 +57,7 @@ pnpm install
 pnpm --filter @raqs/web dev
 ```
 
-Open `http://localhost:3000`. Sign in with a username that already exists from `GET /users`. In mock mode the password is ignored and a banner says so.
-
-A production build (`next build`) refuses to start when `NEXT_PUBLIC_AUTH_MODE=mock`.
+Open `http://localhost:3000`. Sign in with a username and password that already exist on `POST /auth/user/token`.
 
 ## Run the mobile app
 
@@ -70,17 +66,15 @@ cd frontend
 pnpm --filter @raqs/mobile start
 ```
 
-Then press `i` or `a`, or scan the QR code with Expo Go. A release build with `EXPO_PUBLIC_AUTH_MODE=mock` shows an error screen instead of the app.
+Then press `i` or `a`, or scan the QR code with Expo Go. Sign in with the same username and password as the web app.
 
-## Auth swap
+## Auth
 
-There is no login endpoint. `MockAuthProvider` in `frontend/packages/shared/src/auth/mock.ts` loads `GET /users` and matches the username. The web app stores that session in an httpOnly cookie (`frontend/storefront/src/app/api/auth/login/route.ts`). The mobile app stores it with `expo-secure-store`.
-
-When the API grows a real login, implement `AuthProvider` against `POST /auth/login` returning `{ access_token, user }`, send `Authorization: Bearer` from `createApiClient`, and set `NEXT_PUBLIC_AUTH_MODE` / `EXPO_PUBLIC_AUTH_MODE` to something other than `mock`. A 401 from the client clears the session and returns to login. Role checks in the UI are presentation only until the API enforces them.
+Sign in with a real username and password. The web login route posts form data to `POST /auth/user/token`, then loads the signed-in user from `GET /auth/me`. The session, including the access token, is stored in an httpOnly cookie. Browser API calls send `Authorization: Bearer`. The mobile app stores the same session with `expo-secure-store` and sends the same header. A 401 clears the session and returns to login.
 
 ## Roles
 
-ADMIN uses the full app. STAFF can read products and add inventory. An inventory edit from STAFF is stored as a pending request (`POST /inventory_update_requests`) until an ADMIN approves or rejects it. Approving writes the inventory row. STAFF does not see the dashboard, measurements, conversions, users, or settings. Sign out stays available. The API does not yet check who calls approve or reject.
+ADMIN uses the full app. STAFF can read products, view inventory, and record transactions. A transaction (`POST /transactions`) does not change `current_stock` until an ADMIN approves it (`POST /transactions/approve` with one or more ids). A sale decreases stock. A purchase, return, or adjustment increases it. An approved transaction cannot be deleted. STAFF does not see the dashboard, measurements, conversions, users, or settings, and cannot create or delete inventory. Sign out stays available. The API requires a valid token on those routes. Product and measurement reads are open to both roles so staff can fill the transaction form. Product writes, inventory create and delete, user management, transaction approval, and deleting an unapproved transaction are admin only.
 
 ## Scripts
 

@@ -1,5 +1,5 @@
 from uuid import UUID
-from sqlalchemy import select
+from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
 
 from app.models.measurement_conversion import MeasurementConversion
@@ -22,6 +22,25 @@ class MeasurementConversionRepository:
 
     def get_by_id(self, measurement_conversion_id: UUID) -> MeasurementConversion | None:
         return self._session.get(MeasurementConversion, measurement_conversion_id)
+
+    def get_by_measurement_pair(
+        self,
+        measurement_a_id: UUID,
+        measurement_b_id: UUID,
+    ) -> MeasurementConversion | None:
+        stmt = select(MeasurementConversion).where(
+            or_(
+                and_(
+                    MeasurementConversion.base_measurement_id == measurement_a_id,
+                    MeasurementConversion.converted_measurement_id == measurement_b_id,
+                ),
+                and_(
+                    MeasurementConversion.base_measurement_id == measurement_b_id,
+                    MeasurementConversion.converted_measurement_id == measurement_a_id,
+                ),
+            )
+        )
+        return self._session.scalars(stmt).first()
     
     def get_by_base_measurement_id_list(self, base_measurement_id: UUID) -> list[MeasurementConversion]:
         stmt = select(MeasurementConversion).where(MeasurementConversion.base_measurement_id == base_measurement_id)

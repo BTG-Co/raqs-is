@@ -5,6 +5,7 @@ export * from "./api/resources";
 export * from "./api/context";
 export * from "./auth/types";
 export * from "./auth/mock";
+export * from "./auth/jwt";
 export * from "./constants";
 export * from "./permissions";
 export * from "./dashboard";

@@ -75,7 +75,6 @@ export default function ProductsPage() {
         error={products.error ? errorMessage(products.error) : null}
         onRetry={() => void products.refetch()}
         rowKey={(row) => row.id}
-        searchText={(row) => `${row.name} ${names.get(row.base_measurement_id)?.name ?? ""}`}
         emptyLabel="No products yet."
         onAdd={admin ? () => { setEditing(null); setOpen(true); } : undefined}
         addLabel="Add product"

@@ -7,14 +7,15 @@ from app.core.config import settings
 from app.db.base import Base
 from app.db.session import engine, get_db
 
+from app.routers.auth import router as auth_router
 from app.routers.inventory import router as inventory_router
-from app.routers.inventory_update_request import router as inventory_update_request_router
 from app.routers.measurement_conversion import router as measurement_conversion_router
 from app.routers.measurement import router as measurement_router
 from app.routers.product import router as product_router
 from app.routers.user import router as user_router
+from app.routers.transaction import router as transaction_router
 
-import app.models.inventory_update_request  # noqa: F401
+import app.models.transaction  # noqa: F401
 
 app = FastAPI()
 app.add_middleware(
@@ -38,9 +39,10 @@ def db_health(db: Annotated[Session, Depends(get_db)]):
     }
 
 # routers
+app.include_router(auth_router)
 app.include_router(product_router)
 app.include_router(inventory_router)
-app.include_router(inventory_update_request_router)
 app.include_router(measurement_conversion_router)
 app.include_router(measurement_router)
 app.include_router(user_router)
+app.include_router(transaction_router)

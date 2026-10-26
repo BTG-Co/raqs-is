@@ -1,18 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-  const mock = process.env.NEXT_PUBLIC_AUTH_MODE === "mock";
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-canvas p-4">
@@ -33,19 +30,13 @@ export default function LoginPage() {
             setError(typeof body.detail === "string" ? body.detail : "Login failed.");
             return;
           }
-          router.replace(body.user?.role === "STAFF" ? "/products" : "/dashboard");
-          router.refresh();
+          window.location.assign(body.user?.role === "STAFF" ? "/products" : "/dashboard");
         }}
       >
         <div>
           <h1 className="text-xl font-semibold text-ink">Sign in</h1>
           <p className="mt-1 text-sm text-muted">RAQS inventory</p>
         </div>
-        {mock ? (
-          <p className="rounded-lg bg-warning px-3 py-2 text-sm text-on-warning" role="status">
-            Dev login. Password is not checked.
-          </p>
-        ) : null}
         {error ? (
           <p className="text-sm text-error" role="alert">
             {error}

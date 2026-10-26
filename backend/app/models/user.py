@@ -1,5 +1,6 @@
 import uuid
 from sqlalchemy import UUID, Column, Enum, String, DateTime, func
+from sqlalchemy.orm import relationship
 from app.db.base import Base
 from app.models.enums import UserRole
 
@@ -15,3 +16,13 @@ class User(Base):
 
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    inventories = relationship(
+        "Inventory",
+        back_populates="creator"
+    )
+
+    transactions = relationship(
+        "Transaction",
+        back_populates="creator"
+    )

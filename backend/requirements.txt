@@ -6,8 +6,6 @@ python-dotenv
 alembic
 pydantic-settings
 python-multipart
-qrcode
-pillow
 psycopg2-binary
 
 # code QOL

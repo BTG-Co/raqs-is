@@ -15,7 +15,6 @@ export default function UsersScreen() {
       rowKey={(row) => row.id}
       title={(row) => row.name}
       subtitle={(row) => `${row.username} · ${row.role}`}
-      searchText={(row) => `${row.name} ${row.username} ${row.role}`}
       isLoading={users.isLoading}
       isRefreshing={users.isRefetching}
       error={users.error}

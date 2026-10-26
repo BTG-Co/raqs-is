@@ -123,40 +123,76 @@ function SelectOptions({
   value: string;
   onChange: (value: string) => void;
 }) {
+  const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const selected = options.find((option) => option.value === value);
   const filtered = options.filter((option) => option.label.toLowerCase().includes(query.trim().toLowerCase()));
+
+  function close() {
+    setOpen(false);
+    setQuery("");
+  }
+
   return (
-    <View style={{ gap: spacing[2] }}>
+    <View style={{ gap: spacing[2], zIndex: open ? 1 : 0 }}>
       <TextInput
-        accessibilityLabel="Filter options"
-        placeholder="Search"
+        accessibilityRole="combobox"
+        accessibilityLabel="Search"
+        accessibilityState={{ expanded: open }}
+        placeholder={selected?.label ?? "Search"}
         placeholderTextColor={colors.textMuted}
-        value={query}
-        onChangeText={setQuery}
+        value={open ? query : (selected?.label ?? "")}
+        onChangeText={(text) => {
+          if (!open) {
+            const label = selected?.label ?? "";
+            if (label && text.startsWith(label)) setQuery(text.slice(label.length));
+            else if (label.startsWith(text)) setQuery("");
+            else setQuery(text);
+          } else {
+            setQuery(text);
+          }
+          setOpen(true);
+        }}
+        onFocus={() => {
+          setQuery("");
+          setOpen(true);
+        }}
+        onBlur={() => {
+          setTimeout(close, 150);
+        }}
         style={ui.input}
       />
-      {filtered.map((option) => {
-        const selected = option.value === value;
-        return (
-          <Pressable
-            key={option.value}
-            accessibilityRole="button"
-            accessibilityState={{ selected }}
-            onPress={() => onChange(option.value)}
-            style={{
-              minHeight: 44,
-              justifyContent: "center",
-              paddingHorizontal: spacing[3],
-              borderRadius: 8,
-              backgroundColor: selected ? colors.primary : colors.card,
-              borderWidth: 1,
-              borderColor: colors.border,
-            }}
-          >
-            <Text style={{ color: selected ? colors.textOnPrimary : colors.text }}>{option.label}</Text>
-          </Pressable>
-        );
-      })}
+      {open ? (
+        filtered.length === 0 ? (
+          <Text style={ui.muted}>No matches</Text>
+        ) : (
+          filtered.map((option) => {
+            const isSelected = option.value === value;
+            return (
+              <Pressable
+                key={option.value}
+                accessibilityRole="button"
+                accessibilityState={{ selected: isSelected }}
+                onPress={() => {
+                  onChange(option.value);
+                  close();
+                }}
+                style={{
+                  minHeight: 44,
+                  justifyContent: "center",
+                  paddingHorizontal: spacing[3],
+                  borderRadius: 8,
+                  backgroundColor: isSelected ? colors.primary : colors.card,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                }}
+              >
+                <Text style={{ color: isSelected ? colors.textOnPrimary : colors.text }}>{option.label}</Text>
+              </Pressable>
+            );
+          })
+        )
+      ) : null}
     </View>
   );
 }

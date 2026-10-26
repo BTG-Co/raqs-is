@@ -29,6 +29,7 @@ export default function AppLayout() {
       <Stack.Screen name="profile" options={{ title: "Profile" }} />
       <Stack.Screen name="product-form" options={{ title: "Product", presentation: "modal" }} />
       <Stack.Screen name="inventory-form" options={{ title: "Inventory", presentation: "modal" }} />
+      <Stack.Screen name="transaction-form" options={{ title: "Transaction", presentation: "modal" }} />
       <Stack.Screen name="measurement-form" options={{ title: "Measurement", presentation: "modal" }} />
       <Stack.Screen name="conversion-form" options={{ title: "Conversion", presentation: "modal" }} />
       <Stack.Screen name="user-form" options={{ title: "User", presentation: "modal" }} />

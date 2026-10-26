@@ -2,9 +2,8 @@ import type { ApiClient } from "./client";
 import type {
   Inventory,
   InventoryCreate,
-  InventoryUpdate,
-  InventoryUpdateRequest,
-  InventoryUpdateRequestCreate,
+  Transaction,
+  TransactionCreate,
   Measurement,
   MeasurementConversion,
   MeasurementConversionCreate,
@@ -42,15 +41,14 @@ export function createResources(client: ApiClient) {
       },
       get: (id: string) => client.get<Inventory>(`/inventory/${id}`),
       create: (body: InventoryCreate) => client.post<Inventory>("/inventory", body),
-      update: (id: string, body: InventoryUpdate) => client.patch<Inventory>(`/inventory/${id}`, body),
       delete: (id: string) => client.delete(`/inventory/${id}`),
     },
-    inventoryUpdateRequests: {
-      list: () => client.get<InventoryUpdateRequest[]>("/inventory_update_requests"),
-      create: (body: InventoryUpdateRequestCreate) =>
-        client.post<InventoryUpdateRequest>("/inventory_update_requests", body),
-      approve: (id: string) => client.post<InventoryUpdateRequest>(`/inventory_update_requests/${id}/approve`, {}),
-      reject: (id: string) => client.post<InventoryUpdateRequest>(`/inventory_update_requests/${id}/reject`, {}),
+    transactions: {
+      list: () => client.get<Transaction[]>("/transactions"),
+      get: (id: string) => client.get<Transaction>(`/transactions/${id}`),
+      create: (body: TransactionCreate) => client.post<Transaction>("/transactions", body),
+      approve: (ids: string[]) => client.post<Transaction[]>("/transactions/approve", { ids }),
+      delete: (id: string) => client.delete(`/transactions/${id}`),
     },
     measurements: {
       list: () => client.get<Measurement[]>("/measurements"),

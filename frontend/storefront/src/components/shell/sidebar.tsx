@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   LogOut,
   Package,
+  Receipt,
   Ruler,
   Settings,
   Users,
@@ -19,6 +20,7 @@ const adminLinks = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/products", label: "Products", icon: Package },
   { href: "/inventory", label: "Inventory", icon: Boxes },
+  { href: "/transactions", label: "Transactions", icon: Receipt },
   { href: "/measurements", label: "Measurements", icon: Ruler },
   { href: "/measurement-conversions", label: "Conversions", icon: ArrowLeftRight },
   { href: "/users", label: "Users", icon: Users },
@@ -28,6 +30,7 @@ const adminLinks = [
 const staffLinks = [
   { href: "/products", label: "Products", icon: Package },
   { href: "/inventory", label: "Inventory", icon: Boxes },
+  { href: "/transactions", label: "Transactions", icon: Receipt },
 ];
 
 export function Sidebar({ user, onNavigate }: { user: SessionUser; onNavigate?: () => void }) {
