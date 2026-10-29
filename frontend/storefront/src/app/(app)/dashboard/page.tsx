@@ -1,49 +1,40 @@
 "use client";
 
+import { useState } from "react";
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Boxes, Package, TriangleAlert, Users } from "lucide-react";
 import {
-  dailySalesByProduct,
   dashboardStats,
-  findKgMeasurement,
   formatRelativeTime,
+  formatReportDate,
+  toDateInputValue,
+  useDailySalesReport,
   useInventoryList,
-  useMeasurementConversions,
   useMeasurements,
   useProducts,
-  useTransactions,
   useUsers,
 } from "@raqs/shared";
 import { useSessionUser } from "@/components/shell/session-context";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { errorMessage } from "@/lib/utils";
 
 export default function DashboardPage() {
   const user = useSessionUser();
+  const [reportDate, setReportDate] = useState(() => toDateInputValue());
   const products = useProducts();
   const inventory = useInventoryList();
   const measurements = useMeasurements();
-  const conversions = useMeasurementConversions();
-  const transactions = useTransactions();
   const users = useUsers();
+  const dailySales = useDailySalesReport(reportDate);
   const pending =
-    products.isLoading ||
-    inventory.isLoading ||
-    measurements.isLoading ||
-    conversions.isLoading ||
-    transactions.isLoading ||
-    users.isLoading;
-  const failed =
-    products.error ||
-    inventory.error ||
-    measurements.error ||
-    conversions.error ||
-    transactions.error ||
-    users.error;
+    products.isLoading || inventory.isLoading || measurements.isLoading || users.isLoading || dailySales.isLoading;
+  const failed = products.error || inventory.error || measurements.error || users.error || dailySales.error;
 
-  if (pending) {
+  if (pending && !dailySales.data) {
     return (
       <div className="grid gap-4 lg:grid-cols-[240px_1fr]" aria-busy="true">
         <div className="space-y-4">
@@ -56,15 +47,7 @@ export default function DashboardPage() {
     );
   }
 
-  if (
-    failed ||
-    !products.data ||
-    !inventory.data ||
-    !measurements.data ||
-    !conversions.data ||
-    !transactions.data ||
-    !users.data
-  ) {
+  if (failed || !products.data || !inventory.data || !measurements.data || !users.data) {
     return (
       <section className="rounded-card bg-card p-6 shadow-card">
         <p className="text-sm text-error" role="alert">
@@ -78,9 +61,8 @@ export default function DashboardPage() {
             void products.refetch();
             void inventory.refetch();
             void measurements.refetch();
-            void conversions.refetch();
-            void transactions.refetch();
             void users.refetch();
+            void dailySales.refetch();
           }}
         >
           Retry
@@ -96,16 +78,13 @@ export default function DashboardPage() {
     users: users.data,
     role: user.role,
   });
-  const dailySales = dailySalesByProduct({
-    transactions: transactions.data,
-    inventory: inventory.data,
-    products: products.data,
-    measurements: measurements.data,
-    conversions: conversions.data,
-  });
-  const kg = findKgMeasurement(measurements.data);
-  const dailyTotalKg = dailySales.reduce((sum, row) => sum + row.kg, 0);
-  const dailyTotalPrice = dailySales.reduce((sum, row) => sum + row.totalPrice, 0);
+  const report = dailySales.data;
+  const chartRows =
+    report?.products.map((row) => ({
+      name: row.name,
+      kg: row.kg,
+      totalPrice: row.total_price,
+    })) ?? [];
 
   const cards = [
     { label: "Products", value: stats.productCount, tone: "bg-support text-on-primary", icon: Package },
@@ -143,24 +122,40 @@ export default function DashboardPage() {
           })}
         </div>
         <section className="rounded-card bg-card p-4 shadow-card">
-          <h2 className="text-base font-semibold text-ink">Daily sales report</h2>
-          <p className="mt-1 text-xs text-muted">
-            Approved sales today, converted to kg per product.
-            {!kg ? " Add a measurement named kg to enable this report." : null}
-          </p>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="text-base font-semibold text-ink">Daily sales report</h2>
+              <p className="mt-1 text-xs text-muted">
+                As of {formatReportDate(report?.date ?? reportDate)}
+              </p>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="report-date" className="text-xs text-muted">
+                Report day
+              </Label>
+              <Input
+                id="report-date"
+                type="date"
+                value={reportDate}
+                max={toDateInputValue()}
+                onChange={(event) => setReportDate(event.target.value)}
+                className="w-auto"
+              />
+            </div>
+          </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <MiniStat label="Total sold today" value={`${dailyTotalKg.toFixed(2)} kg`} />
-            <MiniStat label="Total sales" value={`Php ${dailyTotalPrice.toFixed(2)}`} />
+            <MiniStat label="Total sold" value={`${Number(report?.total_kg ?? 0).toFixed(2)} kg`} />
+            <MiniStat label="Total sales" value={`Php ${Number(report?.total_price ?? 0).toFixed(2)}`} />
           </div>
           <div className="mt-4 h-64">
-            {!kg ? (
-              <p className="text-sm text-muted">Create a kg measurement to see the daily sales chart.</p>
-            ) : dailySales.length === 0 ? (
-              <p className="text-sm text-muted">No approved sales recorded today.</p>
+            {dailySales.isFetching && !report ? (
+              <Skeleton className="h-full w-full" />
+            ) : chartRows.length === 0 ? (
+              <p className="text-sm text-muted">No approved sales recorded for this day.</p>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dailySales}>
-                  <XAxis dataKey="name" tick={{ fontSize: 12 }} interval={0} hide={dailySales.length > 8} />
+                <BarChart data={chartRows}>
+                  <XAxis dataKey="name" tick={{ fontSize: 12 }} interval={0} hide={chartRows.length > 8} />
                   <YAxis tick={{ fontSize: 12 }} unit=" kg" />
                   <Tooltip
                     formatter={(value, name) => {
@@ -175,10 +170,10 @@ export default function DashboardPage() {
               </ResponsiveContainer>
             )}
           </div>
-          {dailySales.length > 0 ? (
+          {chartRows.length > 0 ? (
             <ul className="mt-4 space-y-2 border-t border-line pt-3">
-              {dailySales.map((row) => (
-                <li key={row.productId} className="flex items-center justify-between gap-3 text-sm">
+              {chartRows.map((row) => (
+                <li key={row.name} className="flex items-center justify-between gap-3 text-sm">
                   <span className="font-medium text-ink">{row.name}</span>
                   <span className="text-muted">
                     {row.kg.toFixed(2)} kg · Php {row.totalPrice.toFixed(2)}

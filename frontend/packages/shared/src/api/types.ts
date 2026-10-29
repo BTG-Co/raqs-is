@@ -326,10 +326,60 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/reports/daily-sales": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Daily Sales */
+        get: operations["daily_sales_reports_daily_sales_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** DailySalesProductRow */
+        DailySalesProductRow: {
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /** Name */
+            name: string;
+            /** Kg */
+            kg: number;
+            /** Total Price */
+            total_price: number;
+        };
+        /** DailySalesReportResponse */
+        DailySalesReportResponse: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /**
+             * As Of
+             * Format: date-time
+             */
+            as_of: string;
+            /** Total Kg */
+            total_kg: number;
+            /** Total Price */
+            total_price: number;
+            /** Products */
+            products: components["schemas"]["DailySalesProductRow"][];
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -1727,6 +1777,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    daily_sales_reports_daily_sales_get: {
+        parameters: {
+            query?: {
+                /** @description Calendar day for the sales report (YYYY-MM-DD). Defaults to today (UTC). */
+                date?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DailySalesReportResponse"];
                 };
             };
             /** @description Validation Error */

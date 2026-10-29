@@ -14,6 +14,7 @@ from app.routers.measurement import router as measurement_router
 from app.routers.product import router as product_router
 from app.routers.user import router as user_router
 from app.routers.transaction import router as transaction_router
+from app.routers.report import router as report_router
 
 import app.models.transaction  # noqa: F401
 
@@ -46,3 +47,4 @@ app.include_router(measurement_conversion_router)
 app.include_router(measurement_router)
 app.include_router(user_router)
 app.include_router(transaction_router)
+app.include_router(report_router)

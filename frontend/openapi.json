@@ -1419,10 +1419,134 @@
           }
         }
       }
+    },
+    "/reports/daily-sales": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Daily Sales",
+        "operationId": "daily_sales_reports_daily_sales_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Calendar day for the sales report (YYYY-MM-DD). Defaults to today (UTC).",
+              "title": "Date"
+            },
+            "description": "Calendar day for the sales report (YYYY-MM-DD). Defaults to today (UTC)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DailySalesReportResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "DailySalesProductRow": {
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "kg": {
+            "type": "number",
+            "title": "Kg"
+          },
+          "total_price": {
+            "type": "number",
+            "title": "Total Price"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "kg",
+          "total_price"
+        ],
+        "title": "DailySalesProductRow"
+      },
+      "DailySalesReportResponse": {
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date-time",
+            "title": "As Of"
+          },
+          "total_kg": {
+            "type": "number",
+            "title": "Total Kg"
+          },
+          "total_price": {
+            "type": "number",
+            "title": "Total Price"
+          },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/DailySalesProductRow"
+            },
+            "type": "array",
+            "title": "Products"
+          }
+        },
+        "type": "object",
+        "required": [
+          "date",
+          "as_of",
+          "total_kg",
+          "total_price",
+          "products"
+        ],
+        "title": "DailySalesReportResponse"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {

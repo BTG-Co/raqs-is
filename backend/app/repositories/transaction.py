@@ -1,7 +1,9 @@
+from datetime import datetime
 from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.models.enums import TransactionType
 from app.models.transaction import Transaction
 
 
@@ -37,6 +39,19 @@ class TransactionRepository:
     def get_by_created_by(self, created_by: UUID) -> list[Transaction]:
         stmt = select(Transaction).where(Transaction.created_by == created_by)
         return list(self._session.scalars(stmt))
+
+    def get_approved_sales_between(self, start: datetime, end: datetime) -> list[Transaction]:
+        stmt = (
+            select(Transaction)
+            .where(
+                Transaction.is_approved.is_(True),
+                Transaction.transaction_type == TransactionType.SALE,
+                Transaction.created_at >= start,
+                Transaction.created_at <= end,
+            )
+            .order_by(Transaction.created_at.asc())
+        )
+        return list(self._session.scalars(stmt).all())
 
     def delete(self, transaction: Transaction) -> None:
         self._session.delete(transaction)

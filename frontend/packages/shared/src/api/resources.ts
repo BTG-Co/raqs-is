@@ -1,5 +1,6 @@
 import type { ApiClient } from "./client";
 import type {
+  DailySalesReport,
   Inventory,
   InventoryCreate,
   InventoryDetail,
@@ -75,6 +76,12 @@ export function createResources(client: ApiClient) {
       create: (body: UserCreate) => client.post<User>("/users", body),
       update: (id: string, body: UserUpdate) => client.patch<User>(`/users/${id}`, body),
       delete: (id: string) => client.delete(`/users/${id}`),
+    },
+    reports: {
+      dailySales: (date?: string) => {
+        const query = date ? `?date=${encodeURIComponent(date)}` : "";
+        return client.get<DailySalesReport>(`/reports/daily-sales${query}`);
+      },
     },
   };
 }

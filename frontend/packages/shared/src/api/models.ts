@@ -28,3 +28,6 @@ export type User = Schemas["UserResponse"];
 export type UserCreate = Schemas["UserCreate"];
 export type UserUpdate = Schemas["UserUpdate"];
 export type UserRole = Schemas["UserRole"];
+
+export type DailySalesReport = Schemas["DailySalesReportResponse"];
+export type DailySalesProductRow = Schemas["DailySalesProductRow"];

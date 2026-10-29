@@ -26,6 +26,7 @@ export const queryKeys = {
   users: ["users"] as const,
   user: (id: string) => ["users", id] as const,
   health: ["health"] as const,
+  dailySales: (date: string) => ["reports", "daily-sales", date] as const,
 };
 
 export function useProducts() {
@@ -127,6 +128,7 @@ export function useApproveTransactions() {
       void queryClient.invalidateQueries({ queryKey: queryKeys.transactions });
       void queryClient.invalidateQueries({ queryKey: queryKeys.inventory });
       void queryClient.invalidateQueries({ queryKey: ["inventory"] });
+      void queryClient.invalidateQueries({ queryKey: ["reports", "daily-sales"] });
     },
   });
 }
@@ -256,5 +258,14 @@ export function useDeleteUser() {
       void queryClient.invalidateQueries({ queryKey: queryKeys.users });
       void queryClient.invalidateQueries({ queryKey: queryKeys.user(id) });
     },
+  });
+}
+
+export function useDailySalesReport(date: string) {
+  const api = useResources();
+  return useQuery({
+    queryKey: queryKeys.dailySales(date),
+    queryFn: () => api.reports.dailySales(date),
+    enabled: Boolean(date),
   });
 }

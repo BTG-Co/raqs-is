@@ -1,45 +1,41 @@
-import { ScrollView, Text, View } from "react-native";
+import { useState } from "react";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { Redirect } from "expo-router";
 import { BarChart } from "react-native-gifted-charts";
 import {
-  dailySalesByProduct,
   dashboardStats,
-  findKgMeasurement,
   formatRelativeTime,
+  formatReportDate,
   isAdmin,
+  toDateInputValue,
+  useDailySalesReport,
   useInventoryList,
-  useMeasurementConversions,
   useMeasurements,
   useProducts,
-  useTransactions,
   useUsers,
 } from "@raqs/shared";
 import { useAuth } from "../../../src/auth/auth-context";
 import { RetryBanner } from "../../../src/components/retry-banner";
 import { colors, fontSizes, spacing, ui } from "../../../src/theme";
 
+function shiftDate(value: string, days: number): string {
+  const date = new Date(`${value}T00:00:00`);
+  date.setDate(date.getDate() + days);
+  return toDateInputValue(date);
+}
+
 export default function DashboardScreen() {
   const { session } = useAuth();
+  const [reportDate, setReportDate] = useState(() => toDateInputValue());
   const products = useProducts();
   const inventory = useInventoryList();
   const measurements = useMeasurements();
-  const conversions = useMeasurementConversions();
-  const transactions = useTransactions();
   const users = useUsers();
-  const failed =
-    products.error ||
-    inventory.error ||
-    measurements.error ||
-    conversions.error ||
-    transactions.error ||
-    users.error;
+  const dailySales = useDailySalesReport(reportDate);
+  const failed = products.error || inventory.error || measurements.error || users.error || dailySales.error;
   const pending =
-    products.isLoading ||
-    inventory.isLoading ||
-    measurements.isLoading ||
-    conversions.isLoading ||
-    transactions.isLoading ||
-    users.isLoading;
+    products.isLoading || inventory.isLoading || measurements.isLoading || users.isLoading || dailySales.isLoading;
+  const today = toDateInputValue();
 
   if (session && !isAdmin(session.user.role)) return <Redirect href="/(app)/(tabs)/inventory" />;
 
@@ -47,21 +43,11 @@ export default function DashboardScreen() {
     void products.refetch();
     void inventory.refetch();
     void measurements.refetch();
-    void conversions.refetch();
-    void transactions.refetch();
     void users.refetch();
+    void dailySales.refetch();
   }
 
-  if (
-    !session ||
-    pending ||
-    !products.data ||
-    !inventory.data ||
-    !measurements.data ||
-    !conversions.data ||
-    !transactions.data ||
-    !users.data
-  ) {
+  if (!session || (pending && !dailySales.data) || !products.data || !inventory.data || !measurements.data || !users.data) {
     return (
       <View style={ui.screen}>
         {failed ? <RetryBanner message="Could not load the dashboard." onRetry={retry} /> : null}
@@ -76,16 +62,8 @@ export default function DashboardScreen() {
     users: users.data,
     role: session.user.role,
   });
-  const dailySales = dailySalesByProduct({
-    transactions: transactions.data,
-    inventory: inventory.data,
-    products: products.data,
-    measurements: measurements.data,
-    conversions: conversions.data,
-  });
-  const kg = findKgMeasurement(measurements.data);
-  const dailyTotalKg = dailySales.reduce((sum, row) => sum + row.kg, 0);
-  const dailyTotalPrice = dailySales.reduce((sum, row) => sum + row.totalPrice, 0);
+  const report = dailySales.data;
+  const chartRows = report?.products ?? [];
   const cards = [
     { label: "Products", value: stats.productCount, background: colors.support, color: colors.textOnPrimary },
     { label: "Inventory records", value: stats.inventoryCount, background: colors.primary, color: colors.textOnPrimary },
@@ -107,24 +85,40 @@ export default function DashboardScreen() {
       ))}
       <View style={ui.card}>
         <Text style={ui.title}>Daily sales report</Text>
-        <Text style={ui.muted}>Approved sales today, converted to kg per product.</Text>
+        <Text style={ui.muted}>As of {formatReportDate(report?.date ?? reportDate)}</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: spacing[3], marginTop: spacing[3] }}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Previous day"
+            onPress={() => setReportDate((current) => shiftDate(current, -1))}
+            style={ui.primaryButton}
+          >
+            <Text style={ui.primaryButtonText}>Prev</Text>
+          </Pressable>
+          <Text style={[ui.body, { flex: 1, textAlign: "center" }]}>{formatReportDate(reportDate)}</Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Next day"
+            disabled={reportDate >= today}
+            onPress={() => setReportDate((current) => shiftDate(current, 1))}
+            style={[ui.primaryButton, reportDate >= today && { opacity: 0.5 }]}
+          >
+            <Text style={ui.primaryButtonText}>Next</Text>
+          </Pressable>
+        </View>
         <Text style={[ui.body, { marginTop: spacing[3] }]}>
-          {dailyTotalKg.toFixed(2)} kg · Php {dailyTotalPrice.toFixed(2)}
+          {Number(report?.total_kg ?? 0).toFixed(2)} kg · Php {Number(report?.total_price ?? 0).toFixed(2)}
         </Text>
-        {!kg ? (
-          <Text style={[ui.muted, { marginTop: spacing[3] }]}>Create a kg measurement to see the daily sales chart.</Text>
-        ) : dailySales.length === 0 ? (
-          <Text style={[ui.muted, { marginTop: spacing[3] }]}>No approved sales recorded today.</Text>
+        {chartRows.length === 0 ? (
+          <Text style={[ui.muted, { marginTop: spacing[3] }]}>No approved sales recorded for this day.</Text>
         ) : (
           <BarChart
-            data={dailySales.slice(0, 8).map((item) => ({
+            data={chartRows.slice(0, 8).map((item) => ({
               value: item.kg,
               label: item.name.slice(0, 8),
               frontColor: colors.primary,
               topLabelComponent: () => (
-                <Text style={{ color: colors.textMuted, fontSize: 10, marginBottom: 4 }}>
-                  {item.kg.toFixed(1)}
-                </Text>
+                <Text style={{ color: colors.textMuted, fontSize: 10, marginBottom: 4 }}>{item.kg.toFixed(1)}</Text>
               ),
             }))}
             barWidth={18}
@@ -137,9 +131,9 @@ export default function DashboardScreen() {
             xAxisColor={colors.border}
           />
         )}
-        {dailySales.map((row) => (
-          <Text key={row.productId} style={[ui.body, { marginTop: spacing[2] }]}>
-            {row.name} · {row.kg.toFixed(2)} kg · Php {row.totalPrice.toFixed(2)}
+        {chartRows.map((row) => (
+          <Text key={row.product_id} style={[ui.body, { marginTop: spacing[2] }]}>
+            {row.name} · {row.kg.toFixed(2)} kg · Php {row.total_price.toFixed(2)}
           </Text>
         ))}
       </View>

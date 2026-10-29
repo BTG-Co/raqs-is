@@ -13,6 +13,7 @@ from app.services.auth import AuthService
 from app.models.user import User
 from app.models.enums import UserRole
 from app.services.transaction import TransactionService
+from app.services.report import ReportService
 
 
 def get_user_service(db: Session = Depends(get_db)) -> UserService:
@@ -32,6 +33,9 @@ def get_measurement_conversion_service(db: Session = Depends(get_db)) -> Measure
 
 def get_transaction_service(db: Session = Depends(get_db)) -> TransactionService:
     return TransactionService(db)
+
+def get_report_service(db: Session = Depends(get_db)) -> ReportService:
+    return ReportService(db)
 
 def get_auth_service(db: Session = Depends(get_db)) -> AuthService:
     return AuthService(db)
