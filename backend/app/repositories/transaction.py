@@ -27,8 +27,12 @@ class TransactionRepository:
         return list(self._session.scalars(stmt))
 
     def get_by_inventory_id(self, inventory_id: UUID) -> list[Transaction]:
-        stmt = select(Transaction).where(Transaction.inventory_id == inventory_id)
-        return list(self._session.scalars(stmt))
+        stmt = (
+            select(Transaction)
+            .where(Transaction.inventory_id == inventory_id)
+            .order_by(Transaction.created_at.asc())
+        )
+        return list(self._session.scalars(stmt).all())
 
     def get_by_created_by(self, created_by: UUID) -> list[Transaction]:
         stmt = select(Transaction).where(Transaction.created_by == created_by)

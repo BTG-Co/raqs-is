@@ -1,19 +1,45 @@
 import { ScrollView, Text, View } from "react-native";
 import { Redirect } from "expo-router";
 import { BarChart } from "react-native-gifted-charts";
-import { dashboardStats, formatRelativeTime, isAdmin, useInventoryList, useMeasurements, useProducts, useUsers } from "@raqs/shared";
+import {
+  dailySalesByProduct,
+  dashboardStats,
+  findKgMeasurement,
+  formatRelativeTime,
+  isAdmin,
+  useInventoryList,
+  useMeasurementConversions,
+  useMeasurements,
+  useProducts,
+  useTransactions,
+  useUsers,
+} from "@raqs/shared";
 import { useAuth } from "../../../src/auth/auth-context";
 import { RetryBanner } from "../../../src/components/retry-banner";
-import { colors, fontSizes, radii, spacing, ui } from "../../../src/theme";
+import { colors, fontSizes, spacing, ui } from "../../../src/theme";
 
 export default function DashboardScreen() {
   const { session } = useAuth();
   const products = useProducts();
   const inventory = useInventoryList();
   const measurements = useMeasurements();
+  const conversions = useMeasurementConversions();
+  const transactions = useTransactions();
   const users = useUsers();
-  const failed = products.error || inventory.error || measurements.error || users.error;
-  const pending = products.isLoading || inventory.isLoading || measurements.isLoading || users.isLoading;
+  const failed =
+    products.error ||
+    inventory.error ||
+    measurements.error ||
+    conversions.error ||
+    transactions.error ||
+    users.error;
+  const pending =
+    products.isLoading ||
+    inventory.isLoading ||
+    measurements.isLoading ||
+    conversions.isLoading ||
+    transactions.isLoading ||
+    users.isLoading;
 
   if (session && !isAdmin(session.user.role)) return <Redirect href="/(app)/(tabs)/inventory" />;
 
@@ -21,10 +47,21 @@ export default function DashboardScreen() {
     void products.refetch();
     void inventory.refetch();
     void measurements.refetch();
+    void conversions.refetch();
+    void transactions.refetch();
     void users.refetch();
   }
 
-  if (!session || pending || !products.data || !inventory.data || !measurements.data || !users.data) {
+  if (
+    !session ||
+    pending ||
+    !products.data ||
+    !inventory.data ||
+    !measurements.data ||
+    !conversions.data ||
+    !transactions.data ||
+    !users.data
+  ) {
     return (
       <View style={ui.screen}>
         {failed ? <RetryBanner message="Could not load the dashboard." onRetry={retry} /> : null}
@@ -39,6 +76,16 @@ export default function DashboardScreen() {
     users: users.data,
     role: session.user.role,
   });
+  const dailySales = dailySalesByProduct({
+    transactions: transactions.data,
+    inventory: inventory.data,
+    products: products.data,
+    measurements: measurements.data,
+    conversions: conversions.data,
+  });
+  const kg = findKgMeasurement(measurements.data);
+  const dailyTotalKg = dailySales.reduce((sum, row) => sum + row.kg, 0);
+  const dailyTotalPrice = dailySales.reduce((sum, row) => sum + row.totalPrice, 0);
   const cards = [
     { label: "Products", value: stats.productCount, background: colors.support, color: colors.textOnPrimary },
     { label: "Inventory records", value: stats.inventoryCount, background: colors.primary, color: colors.textOnPrimary },
@@ -59,16 +106,26 @@ export default function DashboardScreen() {
         </View>
       ))}
       <View style={ui.card}>
-        <Text style={ui.title}>Inventory by product</Text>
-        <Text style={ui.muted}>Totals add raw amounts. Units are not converted.</Text>
-        {stats.byProduct.length === 0 ? (
-          <Text style={[ui.muted, { marginTop: spacing[3] }]}>No inventory yet.</Text>
+        <Text style={ui.title}>Daily sales report</Text>
+        <Text style={ui.muted}>Approved sales today, converted to kg per product.</Text>
+        <Text style={[ui.body, { marginTop: spacing[3] }]}>
+          {dailyTotalKg.toFixed(2)} kg · Php {dailyTotalPrice.toFixed(2)}
+        </Text>
+        {!kg ? (
+          <Text style={[ui.muted, { marginTop: spacing[3] }]}>Create a kg measurement to see the daily sales chart.</Text>
+        ) : dailySales.length === 0 ? (
+          <Text style={[ui.muted, { marginTop: spacing[3] }]}>No approved sales recorded today.</Text>
         ) : (
           <BarChart
-            data={stats.byProduct.slice(0, 8).map((item) => ({
-              value: item.amount,
+            data={dailySales.slice(0, 8).map((item) => ({
+              value: item.kg,
               label: item.name.slice(0, 8),
               frontColor: colors.primary,
+              topLabelComponent: () => (
+                <Text style={{ color: colors.textMuted, fontSize: 10, marginBottom: 4 }}>
+                  {item.kg.toFixed(1)}
+                </Text>
+              ),
             }))}
             barWidth={18}
             spacing={14}
@@ -80,6 +137,11 @@ export default function DashboardScreen() {
             xAxisColor={colors.border}
           />
         )}
+        {dailySales.map((row) => (
+          <Text key={row.productId} style={[ui.body, { marginTop: spacing[2] }]}>
+            {row.name} · {row.kg.toFixed(2)} kg · Php {row.totalPrice.toFixed(2)}
+          </Text>
+        ))}
       </View>
       <View style={ui.card}>
         <Text style={ui.title}>Low stock</Text>
@@ -88,26 +150,6 @@ export default function DashboardScreen() {
           <Text key={row.id} style={ui.body}>
             {row.productName} · {row.amount} {row.measurementShort}
           </Text>
-        ))}
-      </View>
-      <View style={ui.card}>
-        <Text style={ui.title}>Products by measurement</Text>
-        {stats.byMeasurement.map((item) => (
-          <View key={item.measurementId} style={{ marginTop: spacing[3] }}>
-            <Text style={ui.body}>
-              {item.name} {Math.round(item.share * 100)}%
-            </Text>
-            <View style={{ height: 8, borderRadius: radii.pill, backgroundColor: colors.border }}>
-              <View
-                style={{
-                  height: 8,
-                  borderRadius: radii.pill,
-                  backgroundColor: colors.primary,
-                  width: `${Math.max(item.share * 100, 4)}%`,
-                }}
-              />
-            </View>
-          </View>
         ))}
       </View>
       <View style={ui.card}>

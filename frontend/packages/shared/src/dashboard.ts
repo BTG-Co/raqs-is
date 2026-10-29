@@ -1,5 +1,12 @@
 import { isLowStock } from "./constants";
-import type { Inventory, Measurement, Product, User } from "./api/models";
+import type {
+  Inventory,
+  Measurement,
+  MeasurementConversion,
+  Product,
+  Transaction,
+  User,
+} from "./api/models";
 
 export type ProductAmount = {
   productId: string;
@@ -22,6 +29,13 @@ export type StockRow = {
   amount: number;
   updatedAt: string;
   low: boolean;
+};
+
+export type DailyProductSale = {
+  productId: string;
+  name: string;
+  kg: number;
+  totalPrice: number;
 };
 
 export function sumInventoryByProduct(inventory: Inventory[], products: Product[]): ProductAmount[] {
@@ -135,4 +149,117 @@ export function formatRelativeTime(iso: string, now = Date.now()): string {
     duration /= amount;
   }
   return formatter.format(Math.round(duration), "year");
+}
+
+function startOfLocalDay(date = new Date()): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function isSameLocalDay(iso: string, day = startOfLocalDay()): boolean {
+  const then = new Date(iso);
+  if (Number.isNaN(then.getTime())) return false;
+  return (
+    then.getFullYear() === day.getFullYear() &&
+    then.getMonth() === day.getMonth() &&
+    then.getDate() === day.getDate()
+  );
+}
+
+export function findKgMeasurement(measurements: Measurement[]): Measurement | undefined {
+  return measurements.find((measurement) => {
+    const shortName = measurement.short_name.trim().toLowerCase();
+    const name = measurement.name.trim().toLowerCase();
+    return shortName === "kg" || name === "kg" || name === "kilogram" || name === "kilograms";
+  });
+}
+
+function convertQuantity(
+  quantity: number,
+  fromId: string,
+  toId: string,
+  conversions: MeasurementConversion[],
+): number | null {
+  if (fromId === toId) return quantity;
+  const conversion = conversions.find(
+    (row) =>
+      (row.base_measurement_id === fromId && row.converted_measurement_id === toId) ||
+      (row.base_measurement_id === toId && row.converted_measurement_id === fromId),
+  );
+  if (!conversion || conversion.base_measurement_to_converted_amount === 0) return null;
+  const factor = conversion.base_measurement_to_converted_amount;
+  // 1 base = factor converted
+  if (fromId === conversion.base_measurement_id && toId === conversion.converted_measurement_id) {
+    return quantity * factor;
+  }
+  if (fromId === conversion.converted_measurement_id && toId === conversion.base_measurement_id) {
+    return quantity / factor;
+  }
+  return null;
+}
+
+function quantityInKg(
+  quantity: number,
+  fromMeasurementId: string,
+  productBaseId: string,
+  kgId: string,
+  conversions: MeasurementConversion[],
+): number | null {
+  const inBase = convertQuantity(quantity, fromMeasurementId, productBaseId, conversions);
+  if (inBase === null) return null;
+  return convertQuantity(inBase, productBaseId, kgId, conversions);
+}
+
+/** Approved sales recorded today, converted to kg per product. */
+export function dailySalesByProduct(input: {
+  transactions: Transaction[];
+  inventory: Inventory[];
+  products: Product[];
+  measurements: Measurement[];
+  conversions: MeasurementConversion[];
+  day?: Date;
+}): DailyProductSale[] {
+  const kg = findKgMeasurement(input.measurements);
+  if (!kg) return [];
+
+  const day = startOfLocalDay(input.day);
+  const productById = new Map(input.products.map((product) => [product.id, product]));
+  const inventoryById = new Map(input.inventory.map((row) => [row.id, row]));
+  const totals = new Map<string, { name: string; kg: number; totalPrice: number }>();
+
+  for (const row of input.transactions) {
+    if (!row.is_approved || row.transaction_type !== "SALE") continue;
+    if (!isSameLocalDay(row.created_at, day)) continue;
+
+    const inventory = inventoryById.get(row.inventory_id);
+    if (!inventory) continue;
+    const product = productById.get(inventory.product_id);
+    if (!product) continue;
+
+    const kgAmount = quantityInKg(
+      row.quantity,
+      row.measurement_id,
+      product.base_measurement_id,
+      kg.id,
+      input.conversions,
+    );
+    if (kgAmount === null) continue;
+
+    const current = totals.get(product.id) ?? {
+      name: product.name,
+      kg: 0,
+      totalPrice: 0,
+    };
+    current.kg += kgAmount;
+    current.totalPrice += row.total_price;
+    totals.set(product.id, current);
+  }
+
+  return [...totals.entries()]
+    .map(([productId, value]) => ({
+      productId,
+      name: value.name,
+      kg: value.kg,
+      totalPrice: value.totalPrice,
+    }))
+    .sort((a, b) => b.kg - a.kg);
 }

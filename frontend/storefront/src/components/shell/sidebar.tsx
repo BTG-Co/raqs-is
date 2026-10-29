@@ -58,7 +58,7 @@ export function Sidebar({ user, onNavigate }: { user: SessionUser; onNavigate?: 
       </div>
       <nav className="flex flex-1 flex-col gap-1 px-3" aria-label="Primary">
         {items.map((item) => {
-          const active = pathname === item.href;
+          const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`));
           const Icon = item.icon;
           return (
             <Link

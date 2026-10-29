@@ -25,8 +25,8 @@ export default function LoginPage() {
             body: JSON.stringify({ username, password }),
           });
           const body = (await response.json()) as { detail?: string; user?: { role?: string } };
-          setPending(false);
           if (!response.ok) {
+            setPending(false);
             setError(typeof body.detail === "string" ? body.detail : "Login failed.");
             return;
           }
@@ -50,6 +50,7 @@ export default function LoginPage() {
             autoComplete="username"
             value={username}
             onChange={(event) => setUsername(event.target.value)}
+            disabled={pending}
             required
           />
         </div>
@@ -62,6 +63,7 @@ export default function LoginPage() {
             autoComplete="current-password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
+            disabled={pending}
             required
           />
         </div>

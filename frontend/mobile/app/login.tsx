@@ -24,20 +24,22 @@ export default function LoginScreen() {
         <TextInput
           accessibilityLabel="Username"
           autoCapitalize="none"
+          editable={!pending}
           value={username}
           onChangeText={setUsername}
           placeholder="Username"
           placeholderTextColor={colors.textMuted}
-          style={ui.input}
+          style={[ui.input, pending && { opacity: 0.6 }]}
         />
         <TextInput
           accessibilityLabel="Password"
           secureTextEntry
+          editable={!pending}
           value={password}
           onChangeText={setPassword}
           placeholder="Password"
           placeholderTextColor={colors.textMuted}
-          style={ui.input}
+          style={[ui.input, pending && { opacity: 0.6 }]}
         />
         <Pressable
           accessibilityRole="button"
@@ -53,7 +55,7 @@ export default function LoginScreen() {
               })
               .finally(() => setPending(false));
           }}
-          style={ui.primaryButton}
+          style={[ui.primaryButton, pending && { opacity: 0.6 }]}
         >
           <Text style={ui.primaryButtonText}>{pending ? "Signing in…" : "Sign in"}</Text>
         </Pressable>

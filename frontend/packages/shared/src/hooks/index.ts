@@ -71,6 +71,15 @@ export function useInventoryList() {
   return useQuery({ queryKey: queryKeys.inventory, queryFn: () => api.inventory.list() });
 }
 
+export function useInventoryDetail(id: string) {
+  const api = useResources();
+  return useQuery({
+    queryKey: queryKeys.inventoryItem(id),
+    queryFn: () => api.inventory.detail(id),
+    enabled: Boolean(id),
+  });
+}
+
 export function useCreateInventory() {
   const api = useResources();
   const queryClient = useQueryClient();
@@ -117,6 +126,7 @@ export function useApproveTransactions() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.transactions });
       void queryClient.invalidateQueries({ queryKey: queryKeys.inventory });
+      void queryClient.invalidateQueries({ queryKey: ["inventory"] });
     },
   });
 }

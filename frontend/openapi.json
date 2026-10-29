@@ -398,6 +398,54 @@
         ]
       }
     },
+    "/inventory/{inventory_id}/detail": {
+      "get": {
+        "tags": [
+          "inventory"
+        ],
+        "summary": "Get Detail",
+        "operationId": "get_detail_inventory__inventory_id__detail_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "inventory_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Inventory Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/inventory/{inventory_id}": {
       "get": {
         "tags": [
@@ -1413,6 +1461,133 @@
         ],
         "title": "InventoryCreate"
       },
+      "InventoryDetailResponse": {
+        "properties": {
+          "inventory": {
+            "$ref": "#/components/schemas/InventoryResponse"
+          },
+          "product_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Product Id"
+          },
+          "product_name": {
+            "type": "string",
+            "title": "Product Name"
+          },
+          "base_measurement_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Base Measurement Id"
+          },
+          "stock_views": {
+            "items": {
+              "$ref": "#/components/schemas/InventoryStockView"
+            },
+            "type": "array",
+            "title": "Stock Views"
+          },
+          "transactions": {
+            "items": {
+              "$ref": "#/components/schemas/InventoryLedgerItem"
+            },
+            "type": "array",
+            "title": "Transactions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "inventory",
+          "product_id",
+          "product_name",
+          "base_measurement_id",
+          "stock_views",
+          "transactions"
+        ],
+        "title": "InventoryDetailResponse"
+      },
+      "InventoryLedgerItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "measurement_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Measurement Id"
+          },
+          "transaction_type": {
+            "$ref": "#/components/schemas/TransactionType"
+          },
+          "creator": {
+            "$ref": "#/components/schemas/UserCreatedByResponse"
+          },
+          "unit_price": {
+            "type": "number",
+            "title": "Unit Price"
+          },
+          "quantity": {
+            "type": "number",
+            "title": "Quantity"
+          },
+          "total_price": {
+            "type": "number",
+            "title": "Total Price"
+          },
+          "is_approved": {
+            "type": "boolean",
+            "title": "Is Approved"
+          },
+          "stock_quantity": {
+            "type": "number",
+            "title": "Stock Quantity"
+          },
+          "signed_stock_delta": {
+            "type": "number",
+            "title": "Signed Stock Delta"
+          },
+          "running_balance": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Running Balance"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "measurement_id",
+          "transaction_type",
+          "creator",
+          "unit_price",
+          "quantity",
+          "total_price",
+          "is_approved",
+          "stock_quantity",
+          "signed_stock_delta",
+          "running_balance",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "InventoryLedgerItem"
+      },
       "InventoryResponse": {
         "properties": {
           "id": {
@@ -1459,6 +1634,45 @@
           "updated_at"
         ],
         "title": "InventoryResponse"
+      },
+      "InventoryStockView": {
+        "properties": {
+          "measurement_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Measurement Id"
+          },
+          "measurement_name": {
+            "type": "string",
+            "title": "Measurement Name"
+          },
+          "short_name": {
+            "type": "string",
+            "title": "Short Name"
+          },
+          "quantity": {
+            "type": "number",
+            "title": "Quantity"
+          },
+          "is_stock_unit": {
+            "type": "boolean",
+            "title": "Is Stock Unit"
+          },
+          "is_base_unit": {
+            "type": "boolean",
+            "title": "Is Base Unit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "measurement_id",
+          "measurement_name",
+          "short_name",
+          "quantity",
+          "is_stock_unit",
+          "is_base_unit"
+        ],
+        "title": "InventoryStockView"
       },
       "LoginForm": {
         "properties": {

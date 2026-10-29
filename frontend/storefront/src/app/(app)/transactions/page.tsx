@@ -26,8 +26,8 @@ import { Button } from "@/components/ui/button";
 import { errorMessage } from "@/lib/utils";
 
 const typeOptions = [
-  { value: "PURCHASE", label: "Purchase" },
   { value: "SALE", label: "Sale" },
+  { value: "PURCHASE", label: "Purchase" },
   { value: "RETURN", label: "Return" },
   { value: "ADJUSTMENT", label: "Adjustment" },
 ];
@@ -124,16 +124,28 @@ export default function TransactionsPage() {
         emptyHint: "Add an inventory row before recording a transaction.",
         clears: ["measurement_id"],
       },
-      {
-        kind: "select",
-        name: "measurement_id",
-        label: "Measurement",
-        options: measurementOptions,
-        emptyHint: measurementHint,
-      },
       { kind: "select", name: "transaction_type", label: "Type", options: typeOptions, emptyHint: "Choose a transaction type." },
-      { kind: "number", name: "quantity", label: "Quantity" },
-      { kind: "number", name: "unit_price", label: "Unit price" },
+      {
+        kind: "row",
+        fields: [
+          { kind: "number", name: "quantity", label: "Quantity", placeholder: "0.00", step: "0.01" },
+          {
+            kind: "select",
+            name: "measurement_id",
+            label: "Measurement",
+            options: measurementOptions,
+            emptyHint: measurementHint,
+          },
+        ],
+      },
+      {
+        kind: "number",
+        name: "unit_price",
+        label: "Unit price",
+        prefix: "Php",
+        placeholder: "0.00",
+        step: "0.01",
+      },
     ];
   }
 
@@ -239,7 +251,7 @@ export default function TransactionsPage() {
             header: "Unit price",
             align: "right",
             sortValue: (row) => row.unit_price,
-            cell: (row) => row.unit_price,
+            cell: (row) => `Php ${Number(row.unit_price).toFixed(2)}`,
           },
           {
             id: "status",
@@ -260,7 +272,7 @@ export default function TransactionsPage() {
         title="Record transaction"
         schema={transactionCreateSchema}
         fields={fieldsFor}
-        defaultValues={{ inventory_id: "", measurement_id: "", transaction_type: "PURCHASE", quantity: 1, unit_price: 0 }}
+        defaultValues={{ inventory_id: "", measurement_id: "", transaction_type: "SALE", quantity: 1, unit_price: 0 }}
         submitLabel="Submit for approval"
         onClose={() => setOpen(false)}
         onSubmit={async (values) => {

@@ -2,6 +2,7 @@ import type { ApiClient } from "./client";
 import type {
   Inventory,
   InventoryCreate,
+  InventoryDetail,
   Transaction,
   TransactionCreate,
   Measurement,
@@ -40,6 +41,7 @@ export function createResources(client: ApiClient) {
         return Array.isArray(data) ? data : [];
       },
       get: (id: string) => client.get<Inventory>(`/inventory/${id}`),
+      detail: (id: string) => client.get<InventoryDetail>(`/inventory/${id}/detail`),
       create: (body: InventoryCreate) => client.post<Inventory>("/inventory", body),
       delete: (id: string) => client.delete(`/inventory/${id}`),
     },

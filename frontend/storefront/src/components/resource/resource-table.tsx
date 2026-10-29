@@ -25,6 +25,8 @@ type Props<T> = {
   emptyLabel: string;
   onAdd?: () => void;
   addLabel?: string;
+  onView?: (row: T) => void;
+  viewLabel?: string;
   onEdit?: (row: T) => void;
   editLabel?: string;
   onDelete?: (row: T) => Promise<void> | void;
@@ -43,6 +45,8 @@ export function ResourceTable<T>({
   emptyLabel,
   onAdd,
   addLabel = "Add",
+  onView,
+  viewLabel = "View",
   onEdit,
   editLabel = "Edit",
   onDelete,
@@ -74,7 +78,7 @@ export function ResourceTable<T>({
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
   const current = Math.min(page, pageCount - 1);
   const visible = filtered.slice(current * pageSize, current * pageSize + pageSize);
-  const showActions = Boolean(onEdit || onDelete);
+  const showActions = Boolean(onView || onEdit || onDelete);
 
   function toggleSort(id: string) {
     setSort((prev) =>
@@ -151,6 +155,11 @@ export function ResourceTable<T>({
                   {showActions ? (
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
+                        {onView ? (
+                          <Button type="button" variant="ghost" size="sm" onClick={() => onView(row)}>
+                            {viewLabel}
+                          </Button>
+                        ) : null}
                         {onEdit ? (
                           <Button type="button" variant="ghost" size="sm" onClick={() => onEdit(row)}>
                             {editLabel}

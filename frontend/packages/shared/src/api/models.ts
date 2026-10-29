@@ -8,6 +8,9 @@ export type ProductUpdate = Schemas["ProductUpdate"];
 
 export type Inventory = Schemas["InventoryResponse"];
 export type InventoryCreate = Schemas["InventoryCreate"];
+export type InventoryDetail = Schemas["InventoryDetailResponse"];
+export type InventoryStockView = Schemas["InventoryStockView"];
+export type InventoryLedgerItem = Schemas["InventoryLedgerItem"];
 
 export type Transaction = Schemas["TransactionResponse"];
 export type TransactionCreate = Schemas["TransactionCreate"];

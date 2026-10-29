@@ -127,6 +127,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/inventory/{inventory_id}/detail": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Detail */
+        get: operations["get_detail_inventory__inventory_id__detail_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/inventory/{inventory_id}": {
         parameters: {
             query?: never;
@@ -333,6 +350,65 @@ export interface components {
             /** Current Stock */
             current_stock: number;
         };
+        /** InventoryDetailResponse */
+        InventoryDetailResponse: {
+            inventory: components["schemas"]["InventoryResponse"];
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /** Product Name */
+            product_name: string;
+            /**
+             * Base Measurement Id
+             * Format: uuid
+             */
+            base_measurement_id: string;
+            /** Stock Views */
+            stock_views: components["schemas"]["InventoryStockView"][];
+            /** Transactions */
+            transactions: components["schemas"]["InventoryLedgerItem"][];
+        };
+        /** InventoryLedgerItem */
+        InventoryLedgerItem: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Measurement Id
+             * Format: uuid
+             */
+            measurement_id: string;
+            transaction_type: components["schemas"]["TransactionType"];
+            creator: components["schemas"]["UserCreatedByResponse"];
+            /** Unit Price */
+            unit_price: number;
+            /** Quantity */
+            quantity: number;
+            /** Total Price */
+            total_price: number;
+            /** Is Approved */
+            is_approved: boolean;
+            /** Stock Quantity */
+            stock_quantity: number;
+            /** Signed Stock Delta */
+            signed_stock_delta: number;
+            /** Running Balance */
+            running_balance: number | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
         /** InventoryResponse */
         InventoryResponse: {
             /**
@@ -363,6 +439,24 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+        };
+        /** InventoryStockView */
+        InventoryStockView: {
+            /**
+             * Measurement Id
+             * Format: uuid
+             */
+            measurement_id: string;
+            /** Measurement Name */
+            measurement_name: string;
+            /** Short Name */
+            short_name: string;
+            /** Quantity */
+            quantity: number;
+            /** Is Stock Unit */
+            is_stock_unit: boolean;
+            /** Is Base Unit */
+            is_base_unit: boolean;
         };
         /** LoginForm */
         LoginForm: {
@@ -942,6 +1036,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["InventoryResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_detail_inventory__inventory_id__detail_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                inventory_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InventoryDetailResponse"];
                 };
             };
             /** @description Validation Error */

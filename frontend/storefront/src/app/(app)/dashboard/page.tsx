@@ -2,7 +2,18 @@
 
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Boxes, Package, TriangleAlert, Users } from "lucide-react";
-import { dashboardStats, formatRelativeTime, useInventoryList, useMeasurements, useProducts, useUsers } from "@raqs/shared";
+import {
+  dailySalesByProduct,
+  dashboardStats,
+  findKgMeasurement,
+  formatRelativeTime,
+  useInventoryList,
+  useMeasurementConversions,
+  useMeasurements,
+  useProducts,
+  useTransactions,
+  useUsers,
+} from "@raqs/shared";
 import { useSessionUser } from "@/components/shell/session-context";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,9 +25,23 @@ export default function DashboardPage() {
   const products = useProducts();
   const inventory = useInventoryList();
   const measurements = useMeasurements();
+  const conversions = useMeasurementConversions();
+  const transactions = useTransactions();
   const users = useUsers();
-  const pending = products.isLoading || inventory.isLoading || measurements.isLoading || users.isLoading;
-  const failed = products.error || inventory.error || measurements.error || users.error;
+  const pending =
+    products.isLoading ||
+    inventory.isLoading ||
+    measurements.isLoading ||
+    conversions.isLoading ||
+    transactions.isLoading ||
+    users.isLoading;
+  const failed =
+    products.error ||
+    inventory.error ||
+    measurements.error ||
+    conversions.error ||
+    transactions.error ||
+    users.error;
 
   if (pending) {
     return (
@@ -31,7 +56,15 @@ export default function DashboardPage() {
     );
   }
 
-  if (failed || !products.data || !inventory.data || !measurements.data || !users.data) {
+  if (
+    failed ||
+    !products.data ||
+    !inventory.data ||
+    !measurements.data ||
+    !conversions.data ||
+    !transactions.data ||
+    !users.data
+  ) {
     return (
       <section className="rounded-card bg-card p-6 shadow-card">
         <p className="text-sm text-error" role="alert">
@@ -45,6 +78,8 @@ export default function DashboardPage() {
             void products.refetch();
             void inventory.refetch();
             void measurements.refetch();
+            void conversions.refetch();
+            void transactions.refetch();
             void users.refetch();
           }}
         >
@@ -61,6 +96,16 @@ export default function DashboardPage() {
     users: users.data,
     role: user.role,
   });
+  const dailySales = dailySalesByProduct({
+    transactions: transactions.data,
+    inventory: inventory.data,
+    products: products.data,
+    measurements: measurements.data,
+    conversions: conversions.data,
+  });
+  const kg = findKgMeasurement(measurements.data);
+  const dailyTotalKg = dailySales.reduce((sum, row) => sum + row.kg, 0);
+  const dailyTotalPrice = dailySales.reduce((sum, row) => sum + row.totalPrice, 0);
 
   const cards = [
     { label: "Products", value: stats.productCount, tone: "bg-support text-on-primary", icon: Package },
@@ -98,30 +143,53 @@ export default function DashboardPage() {
           })}
         </div>
         <section className="rounded-card bg-card p-4 shadow-card">
-          <h2 className="text-base font-semibold text-ink">Inventory by product</h2>
-          <p className="mt-1 text-xs text-muted">Totals add raw amounts. Units are not converted.</p>
-          <div className="mt-4 grid gap-3 sm:grid-cols-3">
-            <MiniStat label="Inventory rows" value={stats.inventoryCount} />
-            <MiniStat label="Products in stock" value={stats.productsInStock} />
-            <MiniStat label="Low stock" value={stats.lowStockCount} />
+          <h2 className="text-base font-semibold text-ink">Daily sales report</h2>
+          <p className="mt-1 text-xs text-muted">
+            Approved sales today, converted to kg per product.
+            {!kg ? " Add a measurement named kg to enable this report." : null}
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <MiniStat label="Total sold today" value={`${dailyTotalKg.toFixed(2)} kg`} />
+            <MiniStat label="Total sales" value={`Php ${dailyTotalPrice.toFixed(2)}`} />
           </div>
           <div className="mt-4 h-64">
-            {stats.byProduct.length === 0 ? (
-              <p className="text-sm text-muted">No inventory yet.</p>
+            {!kg ? (
+              <p className="text-sm text-muted">Create a kg measurement to see the daily sales chart.</p>
+            ) : dailySales.length === 0 ? (
+              <p className="text-sm text-muted">No approved sales recorded today.</p>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={stats.byProduct}>
-                  <XAxis dataKey="name" tick={{ fontSize: 12 }} interval={0} hide={stats.byProduct.length > 8} />
-                  <YAxis tick={{ fontSize: 12 }} />
-                  <Tooltip />
-                  <Bar dataKey="amount" fill="var(--color-primary)" radius={[8, 8, 0, 0]} />
+                <BarChart data={dailySales}>
+                  <XAxis dataKey="name" tick={{ fontSize: 12 }} interval={0} hide={dailySales.length > 8} />
+                  <YAxis tick={{ fontSize: 12 }} unit=" kg" />
+                  <Tooltip
+                    formatter={(value, name) => {
+                      if (name === "kg") return [`${Number(value).toFixed(2)} kg`, "Sold"];
+                      if (name === "totalPrice") return [`Php ${Number(value).toFixed(2)}`, "Total"];
+                      return [value, name];
+                    }}
+                    labelFormatter={(label) => String(label)}
+                  />
+                  <Bar dataKey="kg" name="kg" fill="var(--color-primary)" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}
           </div>
+          {dailySales.length > 0 ? (
+            <ul className="mt-4 space-y-2 border-t border-line pt-3">
+              {dailySales.map((row) => (
+                <li key={row.productId} className="flex items-center justify-between gap-3 text-sm">
+                  <span className="font-medium text-ink">{row.name}</span>
+                  <span className="text-muted">
+                    {row.kg.toFixed(2)} kg · Php {row.totalPrice.toFixed(2)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : null}
         </section>
       </div>
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-2">
         <section className="rounded-card bg-card p-4 shadow-card">
           <h2 className="mb-3 text-base font-semibold text-ink">Low stock</h2>
           {stats.lowStock.length === 0 ? (
@@ -137,26 +205,6 @@ export default function DashboardPage() {
                     </p>
                   </div>
                   <Badge tone="warning">Low</Badge>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-        <section className="rounded-card bg-card p-4 shadow-card">
-          <h2 className="mb-3 text-base font-semibold text-ink">Products by measurement</h2>
-          {stats.byMeasurement.length === 0 ? (
-            <p className="text-sm text-muted">No products yet.</p>
-          ) : (
-            <ul className="space-y-3">
-              {stats.byMeasurement.map((item) => (
-                <li key={item.measurementId}>
-                  <div className="mb-1 flex justify-between text-sm">
-                    <span>{item.name}</span>
-                    <span className="text-muted">{Math.round(item.share * 100)}%</span>
-                  </div>
-                  <div className="h-2 rounded-pill bg-primary-50">
-                    <div className="h-2 rounded-pill bg-primary" style={{ width: `${Math.max(item.share * 100, 4)}%` }} />
-                  </div>
                 </li>
               ))}
             </ul>
@@ -190,7 +238,7 @@ export default function DashboardPage() {
   );
 }
 
-function MiniStat({ label, value }: { label: string; value: number }) {
+function MiniStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg border border-line px-3 py-2">
       <p className="text-lg font-semibold text-ink">{value}</p>

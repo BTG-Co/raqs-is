@@ -13,9 +13,16 @@ import { Label } from "../ui/label";
 
 type Option = { value: string; label: string };
 
-export type FormField =
+type FieldControl =
   | { kind: "text" | "password" | "url"; name: string; label: string; autoComplete?: string }
-  | { kind: "number"; name: string; label: string }
+  | {
+      kind: "number";
+      name: string;
+      label: string;
+      placeholder?: string;
+      step?: string;
+      prefix?: string;
+    }
   | {
       kind: "select";
       name: string;
@@ -25,6 +32,8 @@ export type FormField =
       /** Clear these fields when this select changes. */
       clears?: string[];
     };
+
+export type FormField = FieldControl | { kind: "row"; fields: FieldControl[] };
 
 type Props<T extends FieldValues> = {
   open: boolean;
@@ -62,10 +71,57 @@ export function ResourceFormDialog<T extends FieldValues>({
 
   const watchedValues = form.watch();
   const resolvedFields = typeof fields === "function" ? fields(watchedValues) : fields;
+  const flatFields = flattenFields(resolvedFields);
 
-  const missingParent = resolvedFields.find(
+  const missingParent = flatFields.find(
     (field) => field.kind === "select" && field.options.length === 0,
   );
+
+  function renderControl(field: FieldControl) {
+    if (field.kind === "select") {
+      return (
+        <SearchableSelect
+          name={field.name}
+          label={field.label}
+          options={field.options}
+          value={String(form.watch(field.name as Path<T>) ?? "")}
+          onChange={(value) => {
+            form.setValue(field.name as Path<T>, value as never, { shouldValidate: true });
+            for (const name of field.clears ?? []) {
+              form.setValue(name as Path<T>, "" as never, { shouldValidate: true });
+            }
+          }}
+          error={form.formState.errors[field.name]?.message as string | undefined}
+        />
+      );
+    }
+
+    return (
+      <>
+        <Label htmlFor={field.name}>{field.label}</Label>
+        <div className={field.kind === "number" && field.prefix ? "relative" : undefined}>
+          {field.kind === "number" && field.prefix ? (
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted">
+              {field.prefix}
+            </span>
+          ) : null}
+          <Input
+            id={field.name}
+            type={field.kind === "number" ? "number" : field.kind === "password" ? "password" : field.kind === "url" ? "url" : "text"}
+            step={field.kind === "number" ? (field.step ?? "any") : undefined}
+            placeholder={field.kind === "number" ? field.placeholder : undefined}
+            autoComplete={field.kind === "password" || field.kind === "text" ? field.autoComplete : undefined}
+            aria-invalid={Boolean(form.formState.errors[field.name])}
+            className={field.kind === "number" && field.prefix ? "pl-12" : undefined}
+            {...form.register(field.name as Path<T>, field.kind === "number" ? { valueAsNumber: true } : undefined)}
+          />
+        </div>
+        {form.formState.errors[field.name]?.message ? (
+          <p className="text-xs text-error">{String(form.formState.errors[field.name]?.message)}</p>
+        ) : null}
+      </>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
@@ -98,40 +154,21 @@ export function ResourceFormDialog<T extends FieldValues>({
           {missingParent && missingParent.kind === "select" ? (
             <p className="text-sm text-muted">{missingParent.emptyHint}</p>
           ) : null}
-          {resolvedFields.map((field) => (
-            <div key={field.name} className="space-y-1.5">
-              {field.kind === "select" ? (
-                <SearchableSelect
-                  name={field.name}
-                  label={field.label}
-                  options={field.options}
-                  value={String(form.watch(field.name as Path<T>) ?? "")}
-                  onChange={(value) => {
-                    form.setValue(field.name as Path<T>, value as never, { shouldValidate: true });
-                    for (const name of field.clears ?? []) {
-                      form.setValue(name as Path<T>, "" as never, { shouldValidate: true });
-                    }
-                  }}
-                  error={form.formState.errors[field.name]?.message as string | undefined}
-                />
-              ) : (
-                <>
-                  <Label htmlFor={field.name}>{field.label}</Label>
-                  <Input
-                    id={field.name}
-                    type={field.kind === "number" ? "number" : field.kind === "password" ? "password" : field.kind === "url" ? "url" : "text"}
-                    step={field.kind === "number" ? "any" : undefined}
-                    autoComplete={field.kind === "password" || field.kind === "text" ? field.autoComplete : undefined}
-                    aria-invalid={Boolean(form.formState.errors[field.name])}
-                    {...form.register(field.name as Path<T>, field.kind === "number" ? { valueAsNumber: true } : undefined)}
-                  />
-                  {form.formState.errors[field.name]?.message ? (
-                    <p className="text-xs text-error">{String(form.formState.errors[field.name]?.message)}</p>
-                  ) : null}
-                </>
-              )}
-            </div>
-          ))}
+          {resolvedFields.map((field, index) =>
+            field.kind === "row" ? (
+              <div key={`row-${index}`} className="grid gap-4 sm:grid-cols-2">
+                {field.fields.map((child) => (
+                  <div key={child.name} className="space-y-1.5">
+                    {renderControl(child)}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div key={field.name} className="space-y-1.5">
+                {renderControl(field)}
+              </div>
+            ),
+          )}
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={onClose}>
               Cancel
@@ -144,6 +181,10 @@ export function ResourceFormDialog<T extends FieldValues>({
       </DialogContent>
     </Dialog>
   );
+}
+
+function flattenFields(fields: FormField[]): FieldControl[] {
+  return fields.flatMap((field) => (field.kind === "row" ? field.fields : [field]));
 }
 
 function SearchableSelect({

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   formatRelativeTime,
@@ -22,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { errorMessage } from "@/lib/utils";
 
 export default function InventoryPage() {
+  const router = useRouter();
   const user = useSessionUser();
   const admin = isAdmin(user.role);
   const inventory = useInventoryList();
@@ -80,6 +82,7 @@ export default function InventoryPage() {
         addLabel="Add inventory"
         onAdd={admin ? () => setOpen(true) : undefined}
         defaultSort={{ id: "updated", direction: "desc" }}
+        onView={admin ? (row) => router.push(`/inventory/${row.id}`) : undefined}
         onDelete={
           admin
             ? async (row) => {

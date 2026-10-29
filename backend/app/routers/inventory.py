@@ -2,7 +2,7 @@ from typing import Annotated
 from uuid import UUID
 from fastapi import APIRouter, Depends, status
 
-from app.schemas.inventory import InventoryCreate, InventoryResponse
+from app.schemas.inventory import InventoryCreate, InventoryDetailResponse, InventoryResponse
 from app.services.inventory import InventoryService
 from app.core.dependencies import get_current_user, get_inventory_service, require_admin
 from app.models.user import User
@@ -33,6 +33,18 @@ def create(
 )
 def get_inventory_list(service: Annotated[InventoryService, Depends(get_inventory_service)]):
     return service.get_inventory_list()
+
+@router.get(
+    "/{inventory_id}/detail",
+    status_code=status.HTTP_200_OK,
+    response_model=InventoryDetailResponse,
+    dependencies=[Depends(require_admin)],
+)
+def get_detail(
+    inventory_id: UUID,
+    service: Annotated[InventoryService, Depends(get_inventory_service)],
+):
+    return service.get_detail(inventory_id)
 
 @router.get(
     "/{inventory_id}",

@@ -4,8 +4,8 @@ import { transactionCreateSchema, useCreateTransaction, useInventoryList, useMea
 import { FormScreen } from "../../src/components/form-screen";
 
 const typeOptions = [
-  { value: "PURCHASE", label: "Purchase" },
   { value: "SALE", label: "Sale" },
+  { value: "PURCHASE", label: "Purchase" },
   { value: "RETURN", label: "Return" },
   { value: "ADJUSTMENT", label: "Adjustment" },
 ];
@@ -47,7 +47,7 @@ export default function TransactionFormScreen() {
     <FormScreen
       schema={transactionCreateSchema}
       fields={fields}
-      defaultValues={{ inventory_id: "", measurement_id: "", transaction_type: "PURCHASE", quantity: 1, unit_price: 0 }}
+      defaultValues={{ inventory_id: "", measurement_id: "", transaction_type: "SALE", quantity: 1, unit_price: 0 }}
       submitLabel="Submit for approval"
       onSubmit={async (values) => {
         await createRow.mutateAsync(values as TransactionCreate);
