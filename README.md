@@ -70,7 +70,32 @@ python -m app.scripts.create_admin --username arth_admin --password 'your-passwo
 
 Re-running with the same username is a no-op.
 
-`Base.metadata.create_all` creates missing tables only. It does not add columns to existing tables or drop old ones. After model changes, alter Postgres yourself (or recreate the DB in local dev).
+## Database migrations (Alembic)
+
+Schema changes go through Alembic (not `create_all`):
+
+```bash
+cd backend
+source .venv/bin/activate
+alembic revision --autogenerate -m "describe change"
+alembic upgrade head
+```
+
+Docker / Render run `alembic upgrade head` before starting uvicorn. If you already have tables from an older local DB and Alembic complains, stamp once: `alembic stamp head`.
+
+## Deploy backend (Render)
+
+1. Push these changes to GitHub (`BTG-Co/raqs-is`).
+2. In [Render](https://dashboard.render.com): **New → Blueprint** → select the repo → apply `render.yaml`.
+3. When prompted for `CORS_ORIGINS`, set your web origin (or `http://localhost:3000` for now).
+4. After deploy, open `https://<service>.onrender.com/health/db` — should return `{"db":"ok"}`.
+5. Bootstrap admin (Shell tab on the service, or from a machine that can reach the DB):
+
+```bash
+python -m app.scripts.create_admin --username arth_admin --password 'your-password'
+```
+
+Free web services sleep after idle; free Postgres expires after 30 days.
 
 Regenerate the client types after an API change:
 

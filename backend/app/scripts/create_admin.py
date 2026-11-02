@@ -22,22 +22,14 @@ import sys
 
 from sqlalchemy import select
 
-# Register all mapped models so relationship strings resolve.
-import app.models.inventory  # noqa: F401
-import app.models.measurement  # noqa: F401
-import app.models.measurement_conversion  # noqa: F401
-import app.models.product  # noqa: F401
-import app.models.transaction  # noqa: F401
-import app.models.user  # noqa: F401
-from app.db.base import Base
-from app.db.session import SessionLocal, engine
+import app.models  # noqa: F401
+from app.db.session import SessionLocal
 from app.models.enums import UserRole
 from app.models.user import User
 from app.utils.password import get_password_hash
 
 
 def create_admin(username: str, password: str, name: str | None = None) -> str:
-    Base.metadata.create_all(bind=engine)
     session = SessionLocal()
     try:
         existing = session.scalar(select(User).where(User.username == username))

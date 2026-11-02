@@ -4,8 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 from app.core.config import settings
-from app.db.base import Base
-from app.db.session import engine, get_db
+from app.db.session import get_db
+import app.models  # noqa: F401
 
 from app.routers.auth import router as auth_router
 from app.routers.inventory import router as inventory_router
@@ -16,8 +16,6 @@ from app.routers.user import router as user_router
 from app.routers.transaction import router as transaction_router
 from app.routers.report import router as report_router
 
-import app.models.transaction  # noqa: F401
-
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -26,7 +24,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-Base.metadata.create_all(bind=engine)
 
 @app.get("/")
 def root():
