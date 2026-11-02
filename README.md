@@ -4,11 +4,18 @@ Inventory admin for products, measurements, conversions, stock, transactions, an
 
 ## Prerequisites
 
-- Python 3.11+ with the backend virtualenv (`backend/.venv`) and a running Postgres database (`DATABASE_URL` in `backend/.env`)
+- Docker Desktop (recommended for API + Postgres), **or** Python 3.11+ with `backend/.venv` and a local Postgres
 - Node.js 22+ and pnpm 10
 - `JWT_SECRET_KEY` in `backend/.env` (HS256; use at least 32 bytes)
 
 ## Environment
+
+```bash
+cp .env.example .env
+cp backend/.env.example backend/.env
+```
+
+Edit `backend/.env` and set a real `JWT_SECRET_KEY`. Compose reads Postgres/pgAdmin vars from the root `.env`.
 
 Web (`frontend/storefront/.env.local`, see `frontend/storefront/.env.example`):
 
@@ -28,13 +35,40 @@ Android emulators cannot use `localhost` for the host machine. Set `EXPO_PUBLIC_
 
 Low stock is `current_stock < 10` in the inventory row’s own unit (`LOW_STOCK_THRESHOLD` in `frontend/packages/shared`).
 
-## Run the API
+## Run the API (Docker)
+
+Same layout as buzzq: Postgres + FastAPI + pgAdmin.
+
+```bash
+docker compose up -d --build
+```
+
+- API: http://localhost:8000
+- Postgres: `localhost:5434` (credentials from `.env`)
+- pgAdmin: http://localhost:5051
+
+Compose overrides `DATABASE_URL` so the backend reaches the `db` service. JWT and CORS still come from `backend/.env`.
+
+## Run the API (local uvicorn)
 
 ```bash
 cd backend
 source .venv/bin/activate
 uvicorn main:app --reload --port 8000
 ```
+
+## Create the first admin
+
+`POST /users` is admin-only, so bootstrap with the idempotent script (password is not stored in the repo):
+
+```bash
+cd backend
+source .venv/bin/activate
+python -m app.scripts.create_admin --username arth_admin --password 'your-password'
+# or: docker compose exec backend python -m app.scripts.create_admin --username arth_admin --password 'your-password'
+```
+
+Re-running with the same username is a no-op.
 
 `Base.metadata.create_all` creates missing tables only. It does not add columns to existing tables or drop old ones. After model changes, alter Postgres yourself (or recreate the DB in local dev).
 
