@@ -10,15 +10,22 @@ from typing import Sequence, Union
 
 import sqlalchemy as sa
 from alembic import op
+from sqlalchemy.dialects import postgresql
 
 revision: str = "a898cc8a241c"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
-userrole = sa.Enum("ADMIN", "STAFF", name="userrole")
-transactiontype = sa.Enum(
-    "SALE", "PURCHASE", "ADJUSTMENT", "RETURN", name="transactiontype"
+# create_type=False so create_table does not recreate enums we create explicitly.
+userrole = postgresql.ENUM("ADMIN", "STAFF", name="userrole", create_type=False)
+transactiontype = postgresql.ENUM(
+    "SALE",
+    "PURCHASE",
+    "ADJUSTMENT",
+    "RETURN",
+    name="transactiontype",
+    create_type=False,
 )
 
 
