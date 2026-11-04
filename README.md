@@ -114,6 +114,14 @@ pnpm --filter @raqs/web dev
 
 Open `http://localhost:3000`. Sign in with a username and password that already exist on `POST /auth/user/token`.
 
+## Deploy web (Vercel)
+
+1. Push to GitHub, then [Vercel](https://vercel.com/new) → Import `BTG-Co/raqs-is`.
+2. **Root Directory:** `frontend/storefront`
+3. Leave Framework as **Next.js**. `vercel.json` sets the pnpm workspace install.
+4. Env var: `NEXT_PUBLIC_API_URL=https://raqs-is.onrender.com` (no trailing slash).
+5. Deploy, copy the `*.vercel.app` URL, then set Render `CORS_ORIGINS` to that origin (comma-separate with localhost if needed) and redeploy the API.
+
 ## Run the mobile app
 
 ```bash
