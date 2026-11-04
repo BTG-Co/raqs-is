@@ -6,7 +6,7 @@ python-dotenv
 alembic
 pydantic-settings
 python-multipart
-psycopg2-binary
+psycopg[binary]
 
 # code QOL
 ruff
